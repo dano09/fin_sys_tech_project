@@ -25,3 +25,12 @@ flask db upgrade
 
 --Rollback Database
 flask db downgrade
+
+
+--STEVENS SERVER
+155.246.104.19
+login:fe595green
+password:fe595
+
+--ipython3
+mongo --host 155.246.104.19
