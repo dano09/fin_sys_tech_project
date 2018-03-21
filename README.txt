@@ -34,3 +34,9 @@ password:fe595
 
 --ipython3
 mongo --host 155.246.104.19
+
+
+--VPN
+https://sit.teamdynamix.com/TDClient/KB/ArticleDet?ID=805
+Server:	155.246.151.12
+155.246.82.169
