@@ -32,6 +32,7 @@ flask db downgrade
 login:fe595green
 password:fe595
 
+
 --ipython3
 mongo --host 155.246.104.19
 
@@ -40,3 +41,11 @@ mongo --host 155.246.104.19
 https://sit.teamdynamix.com/TDClient/KB/ArticleDet?ID=805
 Server:	155.246.151.12
 155.246.82.169
+
+
+-- update project
+MAC- command t （merge）
+
+Push changes
+MAC- command k
+
