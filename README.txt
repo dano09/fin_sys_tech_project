@@ -47,5 +47,6 @@ Server:	155.246.151.12
 MAC- command t （merge）
 
 Push changes
-MAC- command k
+MAC- command k (COMMIT)
+      command + shift + k (Push)
 
