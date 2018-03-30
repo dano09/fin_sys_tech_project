@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div>Start {{ start }}</div>
+    <div>End {{ end }}</div>
+    {{data | safe}}
+{% endblock %}

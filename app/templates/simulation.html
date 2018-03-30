@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <p> Cryptocurrency Simulator</p>
+    <form action="/simulation"  method="post">
+        <dl>
+            <div>What's your start date?</div>
+            {{ form.start }}
+            <div>What's your end date?</div>
+            {{ form.end }}
+        </dl>
+        <p> {{ form.submit() }} </p>
+    </form>
+{% endblock %}
+

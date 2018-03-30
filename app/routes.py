@@ -1,19 +1,16 @@
 from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
+
+from app.datavisualization import create_hover_tool, create_bar_chart
 from app.models import User
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, HelloForm
+from app.forms import LoginForm, RegistrationForm, HelloForm, SimulationForm
 
 import random
-from bokeh.models import (HoverTool, FactorRange, Plot, LinearAxis, Grid,
-                          Range1d)
-from bokeh.models.glyphs import VBar
-from bokeh.plotting import figure
 from bokeh.embed import components
-from bokeh.models.sources import ColumnDataSource
 from flask import Flask, render_template
-
+import pandas as pd
 
 @app.route('/')
 @app.route('/index')
@@ -27,16 +24,24 @@ def index():
 def hello():
     print('inside /hello route')
 
+    # Re-creates the HelloForm Object
     form = HelloForm(request.form)
 
-    print('form is: {}'.format(form))
-    print('form.sayhello is: '.format(form.sayhello))
-    print('form.validate is: '.format(form.validate_on_submit()))
-    print('request.method is: {}'.format(request.method))
     if request.method == 'POST' and not form.validate_on_submit():
-        print('got here xD')
+        # This will simply get the name provided by the user from html
         name = request.form['sayhello']
         print('name is: {}'.format(name))
+
+        # This will re-create the wtforms.fields.core.StringField object
+        # not used here but could be useful
+        name2 = form['sayhello']
+        print('name2 is: {}'.format(type(name2)))
+
+        # This will re-create the wtforms.fields.core.SubmitField object
+        # not used here but could be useful
+        submit = form['submit']
+        print('submit is: {}'.format(type(submit)))
+
         return render_template('hello.html', name=name)
 
     print('About to redirect to index')
@@ -59,50 +64,6 @@ def chart(bars_count):
     script, div = components(plot)
 
     return render_template("chart.html", bars_count=bars_count, the_div=div, the_script=script)
-
-
-
-def create_hover_tool():
-    # we'll code this function in a moment
-    return None
-
-
-def create_bar_chart(data, title, x_name, y_name, hover_tool=None,
-                     width=1200, height=300):
-    """Creates a bar chart plot with the exact styling for the centcom
-       dashboard. Pass in data as a dictionary, desired plot title,
-       name of x axis, y axis and the hover tool HTML.
-    """
-    source = ColumnDataSource(data)
-    xdr = FactorRange(factors=data[x_name])
-    ydr = Range1d(start=0, end=max(data[y_name])*1.5)
-
-    tools = []
-    if hover_tool:
-        tools = [hover_tool,]
-
-    plot = figure(title=title, x_range=xdr, y_range=ydr, plot_width=width,
-                  plot_height=height, h_symmetry=False, v_symmetry=False,
-                  min_border=0, toolbar_location="above", tools=tools,
-                  responsive=True, outline_line_color="#666666")
-
-    glyph = VBar(x=x_name, top=y_name, bottom=0, width=.8, fill_color="#e12127")
-    plot.add_glyph(source, glyph)
-
-    xaxis = LinearAxis()
-    yaxis = LinearAxis()
-
-    plot.add_layout(Grid(dimension=0, ticker=xaxis.ticker))
-    plot.add_layout(Grid(dimension=1, ticker=yaxis.ticker))
-    plot.toolbar.logo = None
-    plot.min_border_top = 0
-    plot.xgrid.grid_line_color = None
-    plot.ygrid.grid_line_color = "#999999"
-    plot.yaxis.axis_label = "Bugs found"
-    plot.ygrid.grid_line_alpha = 0.1
-    plot.xaxis.axis_label = "Days after app deployment"
-    plot.xaxis.major_label_orientation = 1
-    return plot
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -144,3 +105,40 @@ def register():
         flash('Congratulations, you are now a registered user!')
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
+
+
+@app.route('/start_simulation')
+def start_simulation():
+    print('inside /start_simulation route')
+    form = SimulationForm(request.form)
+    return render_template('simulation.html', title='Simulation', form=form)
+
+
+@app.route('/simulation', methods=['GET', 'POST'])
+def simulation():
+    print('inside /simulation route')
+
+    # Create Simulation Form
+    form = SimulationForm(request.form)
+
+    if request.method == 'POST':
+        print('got here xD')
+        start = request.form['start']
+        end = request.form['end']
+
+        print('startdate is: {} and type is {}'.format(start, type(start)))
+        print('enddate is: {}'.format(end))
+
+        # Path will be different when running on your local
+        bitcoin_data = pd.read_csv('C:/Users/Justin/PycharmProjects/fin_sys_tech_project/data/coindesk_bitcoin.csv')
+
+        print('bitcoin_data is {}'.format(bitcoin_data.tail()))
+        print('bitcoin_data is {}'.format(type(bitcoin_data)))
+
+        data = bitcoin_data[(bitcoin_data['Date'] >= start) & (bitcoin_data['Date'] <= end)]
+        print('data is : {}'.format(data))
+
+        return render_template('showResults.html', start=start, end=end, data=data.to_html())
+
+    print('About to redirect to index')
+    return render_template('index.html', form=form)

@@ -2,6 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, ValidationError, Email, EqualTo
 from app.models import User
+from wtforms.fields.html5 import DateField
 
 
 class HelloForm(FlaskForm):
@@ -33,3 +34,10 @@ class RegistrationForm(FlaskForm):
             user = User.query.fitler_by(email=email.data).first()
             if user is not None:
                 raise ValidationError('Please use a different email address.')
+
+
+class SimulationForm(FlaskForm):
+    start = DateField('startDate', format='%Y-%m-%d')
+    end = DateField('endDate', format='%Y-%m-%d')
+    submit = SubmitField('Show Data')
+
