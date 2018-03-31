@@ -8,6 +8,16 @@ import numpy as np
 
 
 class option_data:
+    """class 'option_data':
+    The method 'download_option_price()' will automatically download the latest option prices
+    and return the pandas data frame. The method 'generate_implied_vol()' will calculate the
+    implied vol and output the data.
+
+    But all these methods are called in __init__ of this class.
+    So once you can create this class, implied vols will be calculated.
+    Then you can use option_data.data['Implied_Vol'].
+
+    If you don't know which column name to use, use method option_data.show_names()"""
 
     def __init__(self, interest_rate=0.005):
         # this is my account. Don't share it to others. But I don't have money in it :P
@@ -19,6 +29,9 @@ class option_data:
         self.data = self._download_option_price()
         # calculate implied vol
         self.data['Implied_Vol'] = self.generate_implied_vol()
+
+    def show_names(self):
+        print(self.data.columns.tolist())
 
     def _download_option_price(self):
         data = self.client.getsummary('option')
@@ -59,10 +72,15 @@ class option_data:
             elif Option_Type == 'P':
                 return K * math.exp(-rate * ExpT) * norm.cdf(-d2) - S * norm.cdf(-d1) - Price
 
+        def prim_Vol_fun(vol, *data_in):
+            Price, ExpT, S, K, rate, Option_Type = data_in
+            d1 = (math.log(S / K) + (rate + vol ** 2 / 2) * ExpT) / vol / math.sqrt(ExpT)
+            return S*norm.pdf(d1)*math.sqrt(ExpT)
+
         #give approximated implied vol as the initial guess
         Price, ExpT, S, K, rate, Option_Type = input
         approx = math.sqrt(2*math.pi/ExpT)*Price/S
-        return fsolve(Vol_fun, np.array(approx), args=input)[0]   # solve Implied Vol
+        return fsolve(Vol_fun, np.array(approx), args=input, fprime=prim_Vol_fun)[0]   # solve Implied Vol
 
 
 
