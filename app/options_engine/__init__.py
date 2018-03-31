@@ -22,7 +22,7 @@ class option_data:
         # split strings to get date and type
         data_tmp = data['instrumentName'].str.split('-')
         data['ExpirationDate'] = [data_tmp[i][1] for i in range(len(data))]
-        data['Strike'] = [data_tmp[i][2] for i in range(len(data))]
+        data['Strike'] = [int(data_tmp[i][2]) for i in range(len(data))]
         data['OptionType'] = [data_tmp[i][3] for i in range(len(data))]
         # get the time when the option is created
         data_tmp = data['created'].str.split(' ')
@@ -33,17 +33,15 @@ class option_data:
 
     def generate_implied_vol(self):
         # Option Price, Expiration, Price at that time, Strike, interest rate, Option Type
-        input_data = pd.Series([(self.data.loc[:, 'markPrice'],
+        input_data = pd.Series([tuple([self.data.loc[i, 'markPrice']*self.data.loc[i, 'uPx'],
                                 (self.data.loc[i, 'ExpirationDate'] - self.data.loc[i, 'InitialDate']).days / 365,
                                 self.data.loc[i, 'uPx'],
                                 self.data.loc[i, 'Strike'],
                                 self.rate,
-                                self.data.loc[i, 'OptionType']
+                                self.data.loc[i, 'OptionType']]
                                 ) for i in range(self.data.shape[0])])
 
         return input_data.apply(self._calculate_implied_vol)
-
-
 
     def _calculate_implied_vol(self, input=(1.6, 1, 20, 20, 0.05, 'C')):
         """The input should be Option Price, Expiration, Current Price, Strike, interest rate, Option Type"""
@@ -56,7 +54,10 @@ class option_data:
             elif Option_Type == 'P':
                 return K * math.exp(-rate * ExpT) * norm.cdf(-d2) - S * norm.cdf(-d1) - Price
 
-        return fsolve(Vol_fun, np.array([0.2]), args=input)[0]   # initial guess is 0.2
+        #give approximated implied vol as the initial guess
+        Price, ExpT, S, K, rate, Option_Type = input
+        approx = math.sqrt(2*math.pi/ExpT)*Price/S
+        return fsolve(Vol_fun, np.array(approx), args=input)[0]   # initial guess is 0.2
 
 
 
