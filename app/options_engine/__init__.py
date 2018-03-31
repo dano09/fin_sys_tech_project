@@ -14,8 +14,12 @@ class option_data:
         self.client.index()
         self.client.account()
         self.rate = interest_rate
+        # download option prices
+        self.data = self._download_option_price()
+        # calculate implied vol
+        self.data['Implied_Vol'] = self.generate_implied_vol()
 
-    def download_option_price(self):
+    def _download_option_price(self):
         data = self.client.getsummary('option')
         # convert this list of dictionaries into data frame
         data = pd.DataFrame.from_dict(data=data)
@@ -29,7 +33,7 @@ class option_data:
         data['InitialDate'] = [pd.to_datetime(data_tmp[i][0]) for i in range(len(data))]
         # convert Expiration Date
         data['ExpirationDate'] = pd.to_datetime(data['ExpirationDate'], format='%d%b%y')
-        self.data = data
+        return data
 
     def generate_implied_vol(self):
         # Option Price, Expiration, Price at that time, Strike, interest rate, Option Type
@@ -57,7 +61,7 @@ class option_data:
         #give approximated implied vol as the initial guess
         Price, ExpT, S, K, rate, Option_Type = input
         approx = math.sqrt(2*math.pi/ExpT)*Price/S
-        return fsolve(Vol_fun, np.array(approx), args=input)[0]   # initial guess is 0.2
+        return fsolve(Vol_fun, np.array(approx), args=input)[0]   # solve Implied Vol
 
 
 
