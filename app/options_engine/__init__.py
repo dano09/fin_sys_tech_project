@@ -8,6 +8,7 @@ import numpy as np
 
 
 class option_data:
+
     def __init__(self, interest_rate=0.005):
         # this is my account. Don't share it to others. But I don't have money in it :P
         self.client = RestClient('2SQfDzW1Kaf3F', 'HOG2A2HCYERM2YONRBTYEBMYRZ2ESN3K')
