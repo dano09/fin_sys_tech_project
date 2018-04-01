@@ -1,6 +1,10 @@
 # Commands (need to do this first for Windows)
 set FLASK_APP=C:\Users\Justin\PycharmProjects\fin_sys_tech_project\app.py
 
+--Mac
+export FLASK_APP=/Users/yelaoda/Desktop/fin_sys_tech_project/app.py
+
+Users/yelaoda/Desktop
 # Run Application
 flask run
 
