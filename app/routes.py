@@ -5,7 +5,7 @@ from werkzeug.urls import url_parse
 from app.datavisualization import create_hover_tool, create_bar_chart
 from app.models import User
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, HelloForm, SimulationForm
+from app.forms import LoginForm, RegistrationForm, HelloForm, SimulationForm, OptionForm
 
 import random
 from bokeh.embed import components
@@ -130,7 +130,7 @@ def simulation():
         print('enddate is: {}'.format(end))
 
         # Path will be different when running on your local
-        bitcoin_data = pd.read_csv('C:/Users/Justin/PycharmProjects/fin_sys_tech_project/data/coindesk_bitcoin.csv')
+        bitcoin_data = pd.read_csv('C:/Users/liuyu/source/repos/fin_sys_tech_project/data/coindesk_bitcoin.csv')
 
         print('bitcoin_data is {}'.format(bitcoin_data.tail()))
         print('bitcoin_data is {}'.format(type(bitcoin_data)))
@@ -142,3 +142,24 @@ def simulation():
 
     print('About to redirect to index')
     return render_template('index.html', form=form)
+
+
+@app.route('/start_option')
+def start_option():
+    print('inside /start_option route')
+    form = OptionForm(request.form)
+    return render_template('option.html', title="Input", form=form)
+
+@app.route('/option', methods=['GET','POST'])
+def option():
+    print('inside /option route')
+    form = OptionForm(request.form)
+
+    OPrice = request.form['OPrice']
+    ExpT = request.form['ExpT']
+    S = request.form['S']
+    K = request.form['K']
+    rate = request.form['rate']
+    Otype = request.form['Otype']
+    return render_template('result.html', Price=OPrice, T=ExpT, S=S, K=K, 
+                           i=rate, O=Otype, form=form)

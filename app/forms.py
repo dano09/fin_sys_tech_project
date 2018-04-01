@@ -3,6 +3,7 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, ValidationError, Email, EqualTo
 from app.models import User
 from wtforms.fields.html5 import DateField
+from wtforms.fields import SelectField
 
 
 class HelloForm(FlaskForm):
@@ -40,4 +41,13 @@ class SimulationForm(FlaskForm):
     start = DateField('startDate', format='%Y-%m-%d')
     end = DateField('endDate', format='%Y-%m-%d')
     submit = SubmitField('Show Data')
+
+class OptionForm(FlaskForm):
+    OPrice = StringField('Option Price', validators=[DataRequired()])
+    ExpT = SelectField('Maturity', choices=[('One Week', '1W'),('One Month', '1M'),('Three Month', '3M')])
+    S = StringField('Current Stock Price', validators=[DataRequired()])
+    K = StringField('Strike Price', validators=[DataRequired()])
+    rate = StringField('Interest Rate', validators=[DataRequired()])
+    Otype = SelectField('Option Type', choices=[('Call Option', 'Buy'),('Put Option', 'Sell')])
+    submit = SubmitField('Show me IVol')
 
