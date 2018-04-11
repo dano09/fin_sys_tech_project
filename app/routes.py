@@ -12,7 +12,7 @@ import random
 from bokeh.embed import components
 from flask import Flask, render_template
 import pandas as pd
-
+import os
 
 @app.route('/')
 @app.route('/index')
@@ -173,3 +173,16 @@ def option():
 
     #print('About to redirect to index')
     #return render_template('index.html', form=form)
+
+@app.context_processor
+def override_url_for():
+    return dict(url_for=dated_url_for)
+
+def dated_url_for(endpoint, **values):
+    if endpoint == 'static':
+        filename = values.get('filename', None)
+        if filename:
+            file_path = os.path.join(app.root_path,
+                                     endpoint, filename)
+            values['q'] = int(os.stat(file_path).st_mtime)
+    return url_for(endpoint, **values)

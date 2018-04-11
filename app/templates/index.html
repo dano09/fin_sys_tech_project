@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div>What's your name?</div>
+<h2>What's your name?</h2>
 <form action="/hello" method="post">
     <dl>
         {{ form.sayhello }}
     </dl>
     <p> {{ form.submit() }} </p>
 </form>
-    <div>Draw a Bar Graph?</div>
+<h2>Draw a Bar Graph?</h2>
 <form action="/chart" method="post">
     <dl>
         {{ form.barc }}
@@ -16,7 +16,7 @@
     <p> {{ form.showme() }} </p>
 </form>
 <form action="/option" method="post">
-    <div> Input (Calculate Implied Vol)</div>
+<h2> Input (Calculate Implied Vol)</h2>
         {{ form.hidden_tag() }}
         <p>
             {{ form.OPrice.label }}<br>

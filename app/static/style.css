@@ -3,6 +3,12 @@ body {
     background: #eee;
 }
 
+head {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #ff9966;
+    font-size: 2em;
+}
+
 a, h1, h2 {
     color: #377ba8;
 }
