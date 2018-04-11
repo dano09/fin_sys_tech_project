@@ -74,7 +74,7 @@ class option_data:
             #option_type = data_in[5]
 
             print('price is : {}'.format(np.dtype(Price)))
-            #print('ExpT is : {}'.format(np.dtype(ExpT)))
+            print('ExpT is : {}'.format(np.dtype(ExpT)))
             print('S is : {}'.format(np.dtype(S)))
             print('K is : {}'.format(np.dtype(K)))
             print('rate is : {}'.format(np.dtype(rate)))
