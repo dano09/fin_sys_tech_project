@@ -165,8 +165,8 @@ def option():
         rate = request.form['rate']
         Otype = request.form['Otype']
 
-        volresult=pd.DataFrame((option_data(rate).data['Implied_Vol']).astype(int))
-        print('data is : {}'.format(name))
+        volresult=pd.DataFrame((option_data(float(rate)).data['Implied_Vol']))
+        print('data is : {}'.format(volresult))
 
         return render_template('result.html', Price=OPrice, T=ExpT, S=S, K=K, i=rate, O=Otype, vol=volresult.to_html())
 
