@@ -73,11 +73,11 @@ class option_data:
             #rate = float(data_in[4])
             #option_type = data_in[5]
 
-            print('price is : {}'.format(np.dtype(Price)))
+            #print('price is : {}'.format(np.dtype(Price)))
             #print('ExpT is : {}'.format(np.dtype(ExpT)))
-            print('S is : {}'.format(np.dtype(S)))
-            print('K is : {}'.format(np.dtype(K)))
-            print('rate is : {}'.format(np.dtype(rate)))
+            #print('S is : {}'.format(np.dtype(S)))
+            #print('K is : {}'.format(np.dtype(K)))
+            #print('rate is : {}'.format(np.dtype(rate)))
             
             #if not isinstance(rate, float):
             #print('LOGGING: RATE IS NOT A FLOAT!!!!')
