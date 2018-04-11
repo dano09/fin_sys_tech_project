@@ -4,6 +4,7 @@ from werkzeug.urls import url_parse
 
 from app.datavisualization import create_hover_tool, create_bar_chart
 from app.models import User
+from app.optionsdata import option_data
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, HelloForm, SimulationForm, OptionForm
 
@@ -11,6 +12,7 @@ import random
 from bokeh.embed import components
 from flask import Flask, render_template
 import pandas as pd
+
 
 @app.route('/')
 @app.route('/index')
@@ -48,10 +50,15 @@ def hello():
     return render_template('index.html', form=form)
 
 
-@app.route("/<int:bars_count>/")
-def chart(bars_count):
-    if bars_count <= 0:
-        bars_count = 1
+@app.route('/chart', methods=['GET', 'POST'])
+def chart():
+    form = HelloForm(request.form)  
+
+    if request.method == 'POST':
+        bars_count = int(request.form['barc'])
+        print('bars_count is: {}'.format(bars_count))
+        if bars_count <= 0:
+            bars_count = 1
 
     data = {"days": [], "bugs": [], "costs": []}
     for i in range(1, bars_count + 1):
@@ -63,7 +70,7 @@ def chart(bars_count):
     plot = create_bar_chart(data, "Bugs found per day", "days", "bugs", hover)
     script, div = components(plot)
 
-    return render_template("chart.html", bars_count=bars_count, the_div=div, the_script=script)
+    return render_template("chart.html", bars_count=bars_count, the_div=div, the_script=script, form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -137,29 +144,32 @@ def simulation():
 
         data = bitcoin_data[(bitcoin_data['Date'] >= start) & (bitcoin_data['Date'] <= end)]
         print('data is : {}'.format(data))
-
         return render_template('showResults.html', start=start, end=end, data=data.to_html())
 
     print('About to redirect to index')
     return render_template('index.html', form=form)
 
 
-@app.route('/start_option')
-def start_option():
-    print('inside /start_option route')
-    form = OptionForm(request.form)
-    return render_template('option.html', title="Input", form=form)
-
 @app.route('/option', methods=['GET','POST'])
 def option():
     print('inside /option route')
-    form = OptionForm(request.form)
 
-    OPrice = request.form['OPrice']
-    ExpT = request.form['ExpT']
-    S = request.form['S']
-    K = request.form['K']
-    rate = request.form['rate']
-    Otype = request.form['Otype']
-    return render_template('result.html', Price=OPrice, T=ExpT, S=S, K=K, 
-                           i=rate, O=Otype, form=form)
+    form = HelloForm(request.form)
+
+    if request.method == 'POST':
+        print('got here xD')
+        OPrice = request.form['OPrice']
+        ExpT = request.form['ExpT']
+        S = request.form['S']
+        K = request.form['K']
+        rate = request.form['rate']
+        Otype = request.form['Otype']
+
+        #volresult=pd.DataFrame((option_data(rate).data['Implied_Vol']).astype(int))
+        #print('data is : {}'.format(name))
+
+        return render_template('result.html', Price=OPrice, T=ExpT, S=S, K=K, 
+                               i=rate, O=Otype, form=form)
+
+    #print('About to redirect to index')
+    #return render_template('index.html', form=form)
