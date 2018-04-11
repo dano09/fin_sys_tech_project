@@ -63,26 +63,18 @@ class option_data:
 
     def _calculate_implied_vol(self, input=(1.6, 1, 20, 20, 0.05, 'C')):
         """The input should be Option Price, Expiration, Current Price, Strike, interest rate, Option Type"""
+
         def Vol_fun(vol, *data_in):
             Price, ExpT, S, K, rate, Option_Type = data_in
-            #Price = float(data_in[0])
-            #np.dtype(float)
-            #ExpT = int(data_in[1])
-            #S = int(data_in[2])
-            #K = int(data_in[3])
-            #rate = float(data_in[4])
-            #option_type = data_in[5]
+            rate = np.float64(rate)
+            print('\n-------inside Vol_fun--------------\n')
+            print('vol is : {} and type is: {}'.format(vol, type(vol)))
+            print('price is : {} np.dtype is: {}'.format(Price, type(Price)))
+            print('ExpT is : {} type is {}'.format(ExpT, type(ExpT)))
+            print('S is : {} np.dtype is {}'.format(S, type(S)))
+            print('K is : {} np.dtype is: {}'.format(K, type(K)))
+            print('rate is : {} type is {}'.format(rate, type(rate)))
 
-            #print('price is : {}'.format(np.dtype(Price)))
-            #print('ExpT is : {}'.format(np.dtype(ExpT)))
-            #print('S is : {}'.format(np.dtype(S)))
-            #print('K is : {}'.format(np.dtype(K)))
-            #print('rate is : {}'.format(np.dtype(rate)))
-            
-            #if not isinstance(rate, float):
-            #print('LOGGING: RATE IS NOT A FLOAT!!!!')
-            #float_rate = np.array(rate)
-            
             d1 = (math.log(S / K) + (rate + vol ** 2 / 2) * ExpT) / vol / math.sqrt(ExpT)
             d2 = d1 - vol * math.sqrt(ExpT)
             if Option_Type == 'C':
@@ -91,11 +83,21 @@ class option_data:
                 return K * math.exp(-rate * ExpT) * norm.cdf(-d2) - S * norm.cdf(-d1) - Price
 
         def prim_Vol_fun(vol, *data_in):
+            print('\n-------inside prim_Vol_fun--------------\n')
             Price, ExpT, S, K, rate, Option_Type = data_in
+            rate = np.float64(rate)
+            print('vol is : {} and type is: {}'.format(vol, type(vol)))
+            print('price is : {} np.dtype is: {}'.format(Price, type(Price)))
+            print('ExpT is : {} type is {}'.format(ExpT, type(ExpT)))
+            print('S is : {} np.dtype is {}'.format(S, type(S)))
+            print('K is : {} np.dtype is: {}'.format(K, type(K)))
+            print('rate is : {} type is {}'.format(rate, type(rate)))
+
             d1 = (math.log(S / K) + (rate + vol ** 2 / 2) * ExpT) / vol / math.sqrt(ExpT)
+
             return S*norm.pdf(d1)*math.sqrt(ExpT)
 
-        #give approximated implied vol as the initial guess
+        # give approximated implied vol as the initial guess
         Price, ExpT, S, K, rate, Option_Type = input
         approx = math.sqrt(2*math.pi/ExpT)*Price/S
         return fsolve(Vol_fun, np.array(approx, dtype=float), args=input, fprime=prim_Vol_fun)[0]   # solve Implied Vol

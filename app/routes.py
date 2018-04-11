@@ -165,13 +165,17 @@ def option():
         rate = request.form['rate']
         Otype = request.form['Otype']
 
-        volresult=pd.DataFrame((option_data(float(rate)).data['Implied_Vol']))
-        print('data is : {}'.format(volresult))
+        volresult = pd.DataFrame((option_data(rate).data['Implied_Vol']).astype(int))
 
-        return render_template('result.html', Price=OPrice, T=ExpT, S=S, K=K, i=rate, O=Otype, vol=volresult.to_html())
+        print('vol result is: {}'.format(volresult))
 
-    print('About to redirect to index')
-    return render_template('index.html', form=form)
+        #print('data is : {}'.format(name))
+
+        return render_template('result.html', Price=OPrice, T=ExpT, S=S, K=K, 
+                               i=rate, O=Otype, form=form)
+
+    #print('About to redirect to index')
+    #return render_template('index.html', form=form)
 
 @app.context_processor
 def override_url_for():
