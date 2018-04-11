@@ -1,11 +1,66 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div>What's your name?</div>
+<h2>What's your name?</h2>
 <form action="/hello" method="post">
     <dl>
         {{ form.sayhello }}
     </dl>
     <p> {{ form.submit() }} </p>
 </form>
-{% endblock %}
+<h2>Draw a Bar Graph?</h2>
+<form action="/chart" method="post">
+    <dl>
+        {{ form.barc }}
+    </dl>
+    <p> {{ form.showme() }} </p>
+</form>
+<form action="/option" method="post">
+<h2> Input (Calculate Implied Vol)</h2>
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.OPrice.label }}<br>
+            {{ form.OPrice(size=32) }}<br>
+            {% for error in form.OPrice.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.ExpT.label }}<br>
+            {{ form.ExpT }}<br>
+            {% for error in form.ExpT.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.S.label }}<br>
+            {{ form.S(size=32) }}<br>
+            {% for error in form.S.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.K.label }}<br>
+            {{ form.K(size=32) }}<br>
+            {% for error in form.K.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.rate.label }}<br>
+            {{ form.rate(size=32) }}<br>
+            {% for error in form.rate.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.Otype.label }}<br>
+            {{ form.Otype }}<br>
+            {% for error in form.Otype.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p> {{ form.iVol() }} </p>
+    </form>
+
+    {% endblock %}

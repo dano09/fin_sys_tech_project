@@ -1,21 +1,24 @@
 <html>
-    <head>
-      {% if title %}
-      <title>{{ title }} - Crypto Simulator</title>
-      {% else %}
-      <title>Welcome to the Crypto Simulator</title>
-      {% endif %}
-    </head>
+<head>
+    {% if title %}
+    <title>{{ title }} - Crypto Simulator</title>
+    {% else %}
+    <title>Welcome to the Crypto Simulator</title>
+    {% endif %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="/static/css/reset.css?q=1280549780" type="text/css" media="screen" charset="utf-8" />
+</head>
     <body>
-        <div>Crypto Simulator
+        <div>
+            Crypto Simulator
             <a href="{{ url_for('index') }}">Home</a>
             {% if current_user.is_anonymous %}
-                <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('login') }}">Login</a>
             {% else %}
-                <a href="{{ url_for('logout') }}">Logout</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
             {% endif %}
             <a href="{{ url_for('start_simulation') }}">Data</a>
-            <a href="{{ url_for('start_option') }}">Option</a>
+
         </div>
         <hr>
         {% with messages = get_flashed_messages() %}
