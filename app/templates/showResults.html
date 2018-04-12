@@ -1,7 +1,21 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div>Start {{ start }}</div>
-<div>End {{ end }}</div>
-{{data | safe}}
+<head>
+    <link href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.13.min.css" rel="stylesheet">
+    <link href="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.0.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <h1>
+        Cryptocurrency Data Display
+    </h1>
+    <div>From {{ start }} to {{ end }}</div>
+    {{ div|safe }}
+    <script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.13.min.js"></script>
+    <script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.5.min.js"></script>
+    {{ script|safe }}
+    <div>Data Details</div>
+    {{data | safe}}
+</body>
 {% endblock %}

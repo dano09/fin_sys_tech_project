@@ -1,16 +1,16 @@
-from flask import render_template, flash, redirect, url_for, request
+from flask import Flask, render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 
-from app.datavisualization import create_hover_tool, create_bar_chart
+from app.datavisualization import create_hover_tool, create_bar_chart, create_line_chart
 from app.models import User
 from app.optionsdata import option_data
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, HelloForm, SimulationForm, OptionForm
 
 import random
+from bokeh.plotting import figure
 from bokeh.embed import components
-from flask import Flask, render_template
 import pandas as pd
 import os
 
@@ -70,7 +70,7 @@ def chart():
     plot = create_bar_chart(data, "Bugs found per day", "days", "bugs", hover)
     script, div = components(plot)
 
-    return render_template("chart.html", bars_count=bars_count, the_div=div, the_script=script, form=form)
+    return render_template("chart.html", title='Bar charts with Bokeh', bars_count=bars_count, the_div=div, the_script=script, form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -144,7 +144,11 @@ def simulation():
 
         data = bitcoin_data[(bitcoin_data['Date'] >= start) & (bitcoin_data['Date'] <= end)]
         print('data is : {}'.format(data))
-        return render_template('showResults.html', start=start, end=end, data=data.to_html())
+
+        plot = create_line_chart(data)
+        script, div = components(plot)
+
+        return render_template('showResults.html', title='Cryptocurrency Data Display', start=start, end=end, div=div, script=script, data=data.to_html())
 
     print('About to redirect to index')
     return render_template('index.html', form=form)
@@ -165,21 +169,22 @@ def option():
         rate = request.form['rate']
         Otype = request.form['Otype']
 
-        volresult = pd.DataFrame((option_data(rate).data['Implied_Vol']).astype(int))
+        volresult = pd.DataFrame(option_data(rate).data['Implied_Vol'])
 
         print('vol result is: {}'.format(volresult))
 
         #print('data is : {}'.format(name))
 
-        return render_template('result.html', Price=OPrice, T=ExpT, S=S, K=K, 
-                               i=rate, O=Otype, form=form)
+        return render_template('result.html', Price=OPrice, T=ExpT, S=S, K=K,   i=rate, O=Otype, vol=volresult.to_html())
 
     #print('About to redirect to index')
-    #return render_template('index.html', form=form)
+    return render_template('index.html', form=form)
+
 
 @app.context_processor
 def override_url_for():
     return dict(url_for=dated_url_for)
+
 
 def dated_url_for(endpoint, **values):
     if endpoint == 'static':

@@ -67,13 +67,13 @@ class option_data:
         def Vol_fun(vol, *data_in):
             Price, ExpT, S, K, rate, Option_Type = data_in
             rate = np.float64(rate)
-            print('\n-------inside Vol_fun--------------\n')
-            print('vol is : {} and type is: {}'.format(vol, type(vol)))
-            print('price is : {} np.dtype is: {}'.format(Price, type(Price)))
-            print('ExpT is : {} type is {}'.format(ExpT, type(ExpT)))
-            print('S is : {} np.dtype is {}'.format(S, type(S)))
-            print('K is : {} np.dtype is: {}'.format(K, type(K)))
-            print('rate is : {} type is {}'.format(rate, type(rate)))
+            #print('\n-------inside Vol_fun--------------\n')
+            #print('vol is : {} and type is: {}'.format(vol, type(vol)))
+            #print('price is : {} np.dtype is: {}'.format(Price, type(Price)))
+            #print('ExpT is : {} type is {}'.format(ExpT, type(ExpT)))
+            #print('S is : {} np.dtype is {}'.format(S, type(S)))
+            #print('K is : {} np.dtype is: {}'.format(K, type(K)))
+            #print('rate is : {} type is {}'.format(rate, type(rate)))
 
             d1 = (math.log(S / K) + (rate + vol ** 2 / 2) * ExpT) / vol / math.sqrt(ExpT)
             d2 = d1 - vol * math.sqrt(ExpT)
@@ -83,15 +83,15 @@ class option_data:
                 return K * math.exp(-rate * ExpT) * norm.cdf(-d2) - S * norm.cdf(-d1) - Price
 
         def prim_Vol_fun(vol, *data_in):
-            print('\n-------inside prim_Vol_fun--------------\n')
+            #print('\n-------inside prim_Vol_fun--------------\n')
             Price, ExpT, S, K, rate, Option_Type = data_in
             rate = np.float64(rate)
-            print('vol is : {} and type is: {}'.format(vol, type(vol)))
-            print('price is : {} np.dtype is: {}'.format(Price, type(Price)))
-            print('ExpT is : {} type is {}'.format(ExpT, type(ExpT)))
-            print('S is : {} np.dtype is {}'.format(S, type(S)))
-            print('K is : {} np.dtype is: {}'.format(K, type(K)))
-            print('rate is : {} type is {}'.format(rate, type(rate)))
+            #print('vol is : {} and type is: {}'.format(vol, type(vol)))
+            #print('price is : {} np.dtype is: {}'.format(Price, type(Price)))
+            #print('ExpT is : {} type is {}'.format(ExpT, type(ExpT)))
+            #print('S is : {} np.dtype is {}'.format(S, type(S)))
+            #print('K is : {} np.dtype is: {}'.format(K, type(K)))
+            #print('rate is : {} type is {}'.format(rate, type(rate)))
 
             d1 = (math.log(S / K) + (rate + vol ** 2 / 2) * ExpT) / vol / math.sqrt(ExpT)
 

@@ -2,11 +2,10 @@
   "ExpandedNodes": [
     "",
     "\\app",
-    "\\app\\options_engine",
+    "\\app\\static",
     "\\app\\templates",
-    "\\data",
-    "\\static"
+    "\\data"
   ],
-  "SelectedNode": "\\app\\optionsdata.py",
+  "SelectedNode": "\\app\\templates\\result.html",
   "PreviewInSolutionExplorer": true
 }

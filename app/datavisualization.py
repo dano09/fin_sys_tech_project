@@ -2,6 +2,11 @@ from bokeh.models import (HoverTool,FactorRange, Plot, LinearAxis, Grid,  Range1
 from bokeh.models.glyphs import VBar
 from bokeh.plotting import figure
 from bokeh.models.sources import ColumnDataSource
+from bokeh.layouts import gridplot
+from bokeh.plotting import figure, show, output_file
+from IPython import get_ipython
+import pandas as pd
+import numpy as np
 
 def create_hover_tool():
     hover_html = """
@@ -54,3 +59,36 @@ def create_bar_chart(data, title, x_name, y_name, hover_tool=None,
     plot.xaxis.axis_label = "Days after app deployment"
     plot.xaxis.major_label_orientation = 1
     return plot
+
+
+def create_line_chart(df, width=1200, height=600):
+    df=df.dropna(axis=0,how='any')
+    #transform the data type of 'Date' to datetime64 and set it as index
+    df['Date']=pd.to_datetime(df['Date'])
+    #delete the 00:00:00
+    df['Date'] = df['Date'].dt.normalize()
+    def datetime(x):
+        return np.array(x,dtype=np.datetime64)
+
+    #get_ipython().magic('matplotlib inline')
+    tools_to_show = 'hover,box_zoom,pan,save,reset,wheel_zoom'
+    p1 = figure(x_axis_type="datetime", title="Bitcoin Closing Prices", tools=tools_to_show)
+    p1.grid.grid_line_alpha=0.3
+    p1.xaxis.axis_label = 'Date'
+    p1.yaxis.axis_label = 'Price'
+
+    p1.line(datetime(df['Date']),df['Close Price'],color='#A6CEE3', legend='BTC')
+    p1.legend.location = "top_left"
+
+    close_px = np.array(df['Close Price'])
+    dates= np.array(df['Date'], dtype=np.datetime64)
+
+    window_size = 30
+    window = np.ones(window_size)/float(window_size)
+    btc_avg = np.convolve(close_px, window, 'same')
+
+    hover = p1.select(dict(type=HoverTool))
+    hover.tooltips = [("Close Price", "@y{0.00}"), ]
+    hover.mode = 'mouse'
+
+    return p1
