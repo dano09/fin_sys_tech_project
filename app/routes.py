@@ -2,7 +2,7 @@ from flask import Flask, render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 
-from app.datavisualization import create_hover_tool, create_bar_chart, create_line_chart
+from app.datavisualization import create_hover_tool, create_bar_chart, create_line_chart, create_vol_chart
 from app.models import User
 from app.optionsdata import option_data
 from app import app, db
@@ -174,8 +174,9 @@ def option():
         print('vol result is: {}'.format(volresult))
 
         #print('data is : {}'.format(name))
-
-        return render_template('result.html', Price=OPrice, T=ExpT, S=S, K=K,   i=rate, O=Otype, vol=volresult.to_html())
+        plot = create_vol_chart(option_data(rate).data['Implied_Vol'], option_data(rate).data['Strike'])
+        script, div = components(plot)
+        return render_template('result.html', title='Input result', Price=OPrice, T=ExpT, S=S, K=K, i=rate, O=Otype, vol=volresult.to_html(), div=div, script=script)
 
     #print('About to redirect to index')
     return render_template('index.html', form=form)

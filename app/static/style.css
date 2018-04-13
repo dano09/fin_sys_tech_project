@@ -5,7 +5,7 @@ body {
 
 head {
     font-family: Arial, Helvetica, sans-serif;
-    color: #ff9966;
+    color: orange;
     font-size: 2em;
 }
 
@@ -24,6 +24,10 @@ h1 {
 
 h2 {
     font-size: 1.2em;
+}
+
+.myheader {
+    color: orange
 }
 
 .page {

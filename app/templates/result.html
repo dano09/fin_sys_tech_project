@@ -1,12 +1,21 @@
 ﻿{% extends "base.html" %}
 
 {% block content %}
-<h1>Input result</h1>
+<head>
+    <link href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.13.min.css" rel="stylesheet">
+    <link href="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.0.min.css" rel="stylesheet">
+</head>
+
+<h2>Input result</h2>
 <div>The Option Price is ${{ Price }}.</div>
 <div>The Current Stock Price is ${{ S }}.</div>
 <div>Your expect Strike Price is ${{ K }}.</div>
 <div>The interest rate is {{ i }}.</div>
 <div>Your simulation is a {{ T }} {{ O }}.</div>
-
-{{vol | safe}}
+{{ div|safe }}
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.13.min.js"></script>
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.5.min.js"></script>
+{{ script|safe }}
+<!--
+{{vol | safe}}-->
 {% endblock %}

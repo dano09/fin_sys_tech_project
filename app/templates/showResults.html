@@ -7,15 +7,15 @@
 </head>
 
 <body>
-    <h1>
+    <h2>
         Cryptocurrency Data Display
-    </h1>
+    </h2>
     <div>From {{ start }} to {{ end }}</div>
     {{ div|safe }}
     <script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.13.min.js"></script>
     <script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.5.min.js"></script>
     {{ script|safe }}
-    <div>Data Details</div>
-    {{data | safe}}
+    <!--<div>Data Details</div>
+    {{data | safe}}-->
 </body>
-{% endblock %}
+    {% endblock %}

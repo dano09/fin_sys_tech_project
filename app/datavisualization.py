@@ -4,7 +4,7 @@ from bokeh.plotting import figure
 from bokeh.models.sources import ColumnDataSource
 from bokeh.layouts import gridplot
 from bokeh.plotting import figure, show, output_file
-from IPython import get_ipython
+#from IPython import get_ipython
 import pandas as pd
 import numpy as np
 
@@ -61,7 +61,7 @@ def create_bar_chart(data, title, x_name, y_name, hover_tool=None,
     return plot
 
 
-def create_line_chart(df, width=1200, height=600):
+def create_line_chart(df, width=1200, height=300):
     df=df.dropna(axis=0,how='any')
     #transform the data type of 'Date' to datetime64 and set it as index
     df['Date']=pd.to_datetime(df['Date'])
@@ -92,3 +92,26 @@ def create_line_chart(df, width=1200, height=600):
     hover.mode = 'mouse'
 
     return p1
+
+def create_vol_chart (vol,strike, width=1200, height=300):
+    tools_to_show = 'hover,box_zoom,pan,save,reset,wheel_zoom'
+    p2 = figure(title="Implied Vol", tools=tools_to_show)
+    p2.grid.grid_line_alpha=0.3
+    p2.xaxis.axis_label = 'Strike Price'
+    p2.yaxis.axis_label = 'Implied Vol'
+
+    p2.scatter(strike,vol,color='pink')
+    p2.legend.location = "top_left"
+
+    Im_Vol = np.array(vol)
+    Strike= np.array(strike)
+
+    window_size = 30
+    window = np.ones(window_size)/float(window_size)
+    btc_avg = np.convolve(Im_Vol, window, 'same')
+
+    hover = p2.select(dict(type=HoverTool))
+    hover.tooltips = [("Implied_Vol", "@y{0.00}"), ("Strike Price", "@x{0.00}"), ]
+    hover.mode = 'mouse'
+
+    return p2
