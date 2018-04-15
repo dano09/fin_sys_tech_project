@@ -62,13 +62,16 @@ def create_bar_chart(data, title, x_name, y_name, hover_tool=None,
 
 
 def create_line_chart(df, width=1200, height=300):
-    df=df.dropna(axis=0,how='any')
-    #transform the data type of 'Date' to datetime64 and set it as index
-    df['Date']=pd.to_datetime(df['Date'])
+    df = df.dropna(axis=0, how='any')
+    print('inside create_line_chart func')
+    # transform the data type of 'Date' to datetime64 and set it as index
+    df['Date'] = pd.to_datetime(df['Date'])
+
     #delete the 00:00:00
     df['Date'] = df['Date'].dt.normalize()
+
     def datetime(x):
-        return np.array(x,dtype=np.datetime64)
+        return np.array(x, dtype=np.datetime64)
 
     #get_ipython().magic('matplotlib inline')
     tools_to_show = 'hover,box_zoom,pan,save,reset,wheel_zoom'
@@ -77,11 +80,11 @@ def create_line_chart(df, width=1200, height=300):
     p1.xaxis.axis_label = 'Date'
     p1.yaxis.axis_label = 'Price'
 
-    p1.line(datetime(df['Date']),df['Close Price'],color='#A6CEE3', legend='BTC')
+    p1.line(datetime(df['Date']), df['Close Price'], color='#A6CEE3', legend='BTC')
     p1.legend.location = "top_left"
 
     close_px = np.array(df['Close Price'])
-    dates= np.array(df['Date'], dtype=np.datetime64)
+    dates = np.array(df['Date'], dtype=np.datetime64)
 
     window_size = 30
     window = np.ones(window_size)/float(window_size)

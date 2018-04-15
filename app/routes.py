@@ -2,6 +2,7 @@ from flask import Flask, render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 
+from app.dataservices import Dataservices
 from app.datavisualization import create_hover_tool, create_bar_chart, create_line_chart, create_vol_chart
 from app.models import User
 from app.optionsdata import option_data
@@ -129,26 +130,20 @@ def simulation():
     form = SimulationForm(request.form)
 
     if request.method == 'POST':
-        print('got here xD')
         start = request.form['start']
         end = request.form['end']
 
         print('startdate is: {} and type is {}'.format(start, type(start)))
         print('enddate is: {}'.format(end))
 
-        # Path will be different when running on your local
-        bitcoin_data = pd.read_csv('C:/Users/liuyu/source/repos/fin_sys_tech_project/data/coindesk_bitcoin.csv')
+        # Use Dataservices class to get data now
+        ds = Dataservices()
+        bitcoin_data = ds.get_bitcoin_data(start, end)[1]
 
-        print('bitcoin_data is {}'.format(bitcoin_data.tail()))
-        print('bitcoin_data is {}'.format(type(bitcoin_data)))
-
-        data = bitcoin_data[(bitcoin_data['Date'] >= start) & (bitcoin_data['Date'] <= end)]
-        print('data is : {}'.format(data))
-
-        plot = create_line_chart(data)
+        plot = create_line_chart(bitcoin_data)
         script, div = components(plot)
 
-        return render_template('showResults.html', title='Cryptocurrency Data Display', start=start, end=end, div=div, script=script, data=data.to_html())
+        return render_template('showResults.html', title='Cryptocurrency Data Display', start=start, end=end, div=div, script=script, data=bitcoin_data.to_html())
 
     print('About to redirect to index')
     return render_template('index.html', form=form)
