@@ -79,16 +79,9 @@ def create_line_chart(df, width=1200, height=300):
     p1.grid.grid_line_alpha=0.3
     p1.xaxis.axis_label = 'Date'
     p1.yaxis.axis_label = 'Price'
-
+    p1.toolbar.logo = None
     p1.line(datetime(df['Date']), df['Close Price'], color='#A6CEE3', legend='BTC')
     p1.legend.location = "top_left"
-
-    close_px = np.array(df['Close Price'])
-    dates = np.array(df['Date'], dtype=np.datetime64)
-
-    window_size = 30
-    window = np.ones(window_size)/float(window_size)
-    btc_avg = np.convolve(close_px, window, 'same')
 
     hover = p1.select(dict(type=HoverTool))
     hover.tooltips = [("Close Price", "@y{0.00}"), ]
@@ -102,16 +95,9 @@ def create_vol_chart (vol,strike, width=1200, height=300):
     p2.grid.grid_line_alpha=0.3
     p2.xaxis.axis_label = 'Strike Price'
     p2.yaxis.axis_label = 'Implied Vol'
-
+    p2.toolbar.logo = None
     p2.scatter(strike,vol,color='pink')
     p2.legend.location = "top_left"
-
-    Im_Vol = np.array(vol)
-    Strike= np.array(strike)
-
-    window_size = 30
-    window = np.ones(window_size)/float(window_size)
-    btc_avg = np.convolve(Im_Vol, window, 'same')
 
     hover = p2.select(dict(type=HoverTool))
     hover.tooltips = [("Implied_Vol", "@y{0.00}"), ("Strike Price", "@x{0.00}"), ]
