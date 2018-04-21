@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash, redirect, url_for, request
+from flask import Flask, render_template, flash, redirect, url_for, request, jsonify
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 
@@ -7,7 +7,8 @@ from app.datavisualization import create_hover_tool, create_bar_chart, create_li
 from app.models import User
 from app.optionsdata import option_data
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, HelloForm, SimulationForm, OptionForm
+from app.forms import LoginForm, RegistrationForm, HelloForm, SimulationForm, OptionForm, SimulationExchangeForm, \
+    OurForm
 
 import random
 from bokeh.plotting import figure
@@ -118,8 +119,8 @@ def register():
 @app.route('/start_simulation')
 def start_simulation():
     print('inside /start_simulation route')
-    form = SimulationForm(request.form)
-    return render_template('simulation.html', title='Simulation', form=form)
+    form = SimulationExchangeForm(request.form)
+    return render_template('simulation.html', title='Simulation', exchangeform=form)
 
 
 @app.route('/simulation', methods=['GET', 'POST'])
@@ -147,6 +148,37 @@ def simulation():
 
     print('About to redirect to index')
     return render_template('index.html', form=form)
+
+
+
+@app.route('/testajax')
+def home():
+    form = OurForm()
+    return render_template('example.html', form=form)
+
+@app.route('/something/', methods=['post'])
+def something():
+    print('----INSIDE SOMETHING FUNCTION -------')
+    form = OurForm()
+    if form.validate_on_submit():
+        print('form is: {}'.format(form))
+        print('form.foo is: {}'.format(form.foo))
+        print('form.foo.data is: {}'.format(form.foo.data))
+
+        return jsonify(data={'message': 'hello {}'.format(form.foo.data)})
+
+    return jsonify(data=form.errors)
+
+
+@app.route('/get_symbol_id_for_exchange', methods=['POST'])
+def get_symbol_ids():
+    print('-----inside ajax get_symbol_ids--------')
+    exchange = request.form['exchange']
+    print('exchange is : {}'.format(exchange))
+
+    #return jsonify({'text': translate(request.form['text'],
+    #                                  request.form['source_language'],
+    #                                  request.form['dest_language'])})
 
 
 @app.route('/option', methods=['GET','POST'])
