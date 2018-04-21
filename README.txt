@@ -55,3 +55,7 @@ Push changes
 MAC- command k (COMMIT)
       command + shift + k (Push)
 
+
+CoinAPI URL:
+https://www.coinapi.io/
+
