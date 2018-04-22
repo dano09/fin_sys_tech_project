@@ -7,8 +7,7 @@ from app.datavisualization import create_hover_tool, create_bar_chart, create_li
 from app.models import User
 from app.optionsdata import option_data
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, HelloForm, SimulationForm, OptionForm, SimulationExchangeForm, \
-    OurForm
+from app.forms import LoginForm, RegistrationForm, HelloForm, SimulationForm, OptionForm, SimulationExchangeForm, ExchangeForm
 
 import random
 from bokeh.plotting import figure
@@ -16,12 +15,14 @@ from bokeh.embed import components
 import pandas as pd
 import os
 
+
 @app.route('/')
-@app.route('/index')
 def index():
     print('inside /index route')
     form = HelloForm(request.form)
     return render_template('index.html', title='Home', form=form)
+
+
 
 
 @app.route('/hello', methods=['POST'])
@@ -150,24 +151,26 @@ def simulation():
     return render_template('index.html', form=form)
 
 
+@app.route('/exchangeForm')
+def exchangeForm():
+    form = ExchangeForm()
+    return render_template('showExchanges.html', form=form)
 
-@app.route('/testajax')
-def home():
-    form = OurForm()
-    return render_template('example.html', form=form)
 
-@app.route('/something/', methods=['post'])
-def something():
-    print('----INSIDE SOMETHING FUNCTION -------')
-    form = OurForm()
-    if form.validate_on_submit():
-        print('form is: {}'.format(form))
-        print('form.foo is: {}'.format(form.foo))
-        print('form.foo.data is: {}'.format(form.foo.data))
+@app.route('/processExchange', methods=['POST'])
+def process():
+    exchange = request.form['exchange']
+    if exchange:
+        return jsonify({'exchange': exchange})
+    return jsonify({'error': 'missing data..'})
 
-        return jsonify(data={'message': 'hello {}'.format(form.foo.data)})
 
-    return jsonify(data=form.errors)
+@app.route('/exchanges')
+def exchangedic():
+    ds = Dataservices()
+    exchange_choices = ds.get_exchanges()
+    exchange_list = [{'name': ex} for ex in exchange_choices]
+    return jsonify(exchange_list)
 
 
 @app.route('/get_symbol_id_for_exchange', methods=['POST'])

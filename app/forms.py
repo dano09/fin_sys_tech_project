@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, IntegerField, RadioField
-from wtforms.validators import DataRequired, ValidationError, Email, EqualTo
+from wtforms.validators import DataRequired, ValidationError, Email, EqualTo, Length
 
 from app import dataservices
 from app.dataservices import Dataservices
@@ -54,16 +54,18 @@ class SimulationForm(FlaskForm):
     exchange_choices = ds.get_exchanges()
 
     exchange_list = [(ex, ex) for ex in exchange_choices]
-    print('exchange_list is: {}'.format(exchange_list))
+    #print('exchange_list is: {}'.format(exchange_list))
 
     exchanges = SelectField(label='Exchanges', choices=exchange_list)
     start = DateField('startDate', format='%Y-%m-%d')
     end = DateField('endDate', format='%Y-%m-%d')
     submit = SubmitField('Show Data')
 
+
 # For testing AJAX
-class OurForm(FlaskForm):
-    foo = StringField('foo')
+class ExchangeForm(FlaskForm):
+    exchange = StringField('Exchange', validators=[DataRequired(), Length(max=40)], render_kw={"placeholder": "exchange"})
+
 
 class SimulationExchangeForm(FlaskForm):
     ds = Dataservices()

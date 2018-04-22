@@ -1,0 +1,53 @@
+<form class="form-inline">
+	{{ form.csrf_token }}
+	<div class="form-group">
+	    {{form.exchange(class="form-control")}}
+	  </div>
+	  <button type="submit" class="btn btn-info">Submit</button>
+</form>
+<div id="result"></div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js" ></script>
+
+<script type=text/javascript>
+
+$(document).ready(function(){
+var exchanges = [];
+
+function loadExchanges(){
+	$.getJSON('/exchanges', function(data, status, xhr){
+		for (var i = 0; i < data.length; i++ ) {
+        	exchanges.push(data[i].name);
+    	}
+    });
+};
+
+loadExchanges();
+
+$('#exchange').autocomplete({
+	source: exchanges,
+	});
+});
+
+
+$('form').on('submit', function(e){
+		$.ajax({
+			data: {
+				exchange:$('#exchange').val()
+			},
+			type: 'POST',
+			url : '/processExchange'
+		})
+		.done(function(data){
+			if (data.error){
+				$('#result').text(data.error).show();
+			}
+			else {
+				$('#result').html(data.exchange).show()
+			}
+		})
+		e.preventDefault();
+	});
+
+</script>
