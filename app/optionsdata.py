@@ -30,7 +30,7 @@ class option_data:
         self.Options = self._download_option_price()
         self.Futures = self._download_future_price()
         # calculate implied vol
-        # self.Options['Implied_Vol'] = self.generate_implied_vol()
+        self.Options['Implied_Vol'] = self.generate_implied_vol()
 
     def _download_option_price(self):
         data = self.client.getsummary('option')
