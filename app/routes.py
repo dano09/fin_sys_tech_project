@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash, redirect, url_for, request
+from flask import Flask, render_template, flash, redirect, url_for, request, jsonify
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 
@@ -7,7 +7,7 @@ from app.datavisualization import create_hover_tool, create_bar_chart, create_li
 from app.models import User
 from app.optionsdata import option_data
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, HelloForm, SimulationForm, OptionForm
+from app.forms import LoginForm, RegistrationForm, HelloForm, SimulationForm, OptionForm, SimulationExchangeForm, ExchangeForm
 
 import random
 from bokeh.plotting import figure
@@ -15,12 +15,14 @@ from bokeh.embed import components
 import pandas as pd
 import os
 
+
 @app.route('/')
-@app.route('/index')
 def index():
     print('inside /index route')
     form = HelloForm(request.form)
     return render_template('index.html', title='Home', form=form)
+
+
 
 
 @app.route('/hello', methods=['POST'])
@@ -118,8 +120,8 @@ def register():
 @app.route('/start_simulation')
 def start_simulation():
     print('inside /start_simulation route')
-    form = SimulationForm(request.form)
-    return render_template('simulation.html', title='Simulation', form=form)
+    form = SimulationExchangeForm(request.form)
+    return render_template('simulation.html', title='Simulation', exchangeform=form)
 
 
 @app.route('/simulation', methods=['GET', 'POST'])
@@ -147,6 +149,39 @@ def simulation():
 
     print('About to redirect to index')
     return render_template('index.html', form=form)
+
+
+@app.route('/exchangeForm')
+def exchangeForm():
+    form = ExchangeForm()
+    return render_template('showExchanges.html', form=form)
+
+
+@app.route('/processExchange', methods=['POST'])
+def process():
+    exchange = request.form['exchange']
+    if exchange:
+        return jsonify({'exchange': exchange})
+    return jsonify({'error': 'missing data..'})
+
+
+@app.route('/exchanges')
+def exchangedic():
+    ds = Dataservices()
+    exchange_choices = ds.get_exchanges()
+    exchange_list = [{'name': ex} for ex in exchange_choices]
+    return jsonify(exchange_list)
+
+
+@app.route('/get_symbol_id_for_exchange', methods=['POST'])
+def get_symbol_ids():
+    print('-----inside ajax get_symbol_ids--------')
+    exchange = request.form['exchange']
+    print('exchange is : {}'.format(exchange))
+
+    #return jsonify({'text': translate(request.form['text'],
+    #                                  request.form['source_language'],
+    #                                  request.form['dest_language'])})
 
 
 @app.route('/option', methods=['GET','POST'])
