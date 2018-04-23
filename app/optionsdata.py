@@ -27,10 +27,9 @@ class option_data:
         self.client.account()
         self.rate = interest_rate
         # download option prices
-        self.Options = self._download_option_price()
-        self.Futures = self._download_future_price()
+        self.data = self._download_option_price()
         # calculate implied vol
-        self.Options['Implied_Vol'] = self.generate_implied_vol()
+        self.data['Implied_Vol'] = self.generate_implied_vol()
 
     def _download_option_price(self):
         data = self.client.getsummary('option')
@@ -60,13 +59,13 @@ class option_data:
 
     def generate_implied_vol(self):
         # Option Price, Expiration, Future price, Strike, interest rate, Option Type
-        input_data = pd.Series([tuple([self.Options.loc[i, 'markPrice'],
-                                (self.Options.loc[i, 'ExpirationDate'] - datetime.now()).days/365,
-                                self.Options.loc[i, 'uPx'],
-                                self.Options.loc[i, 'Strike'],
+        input_data = pd.Series([tuple([self.data.loc[i, 'markPrice'],
+                                (self.data.loc[i, 'ExpirationDate'] - datetime.now()).days/365,
+                                self.data.loc[i, 'uPx'],
+                                self.data.loc[i, 'Strike'],
                                 self.rate,
-                                self.Options.loc[i, 'OptionType']]
-                                ) for i in range(self.Options.shape[0])])
+                                self.data.loc[i, 'OptionType']]
+                                ) for i in range(self.data.shape[0])])
 
         return input_data.apply(self._calculate_implied_vol)
 
@@ -85,10 +84,14 @@ class option_data:
             elif Option_Type == 'P':
                 return K * (1 / F * norm.cdf(d1) - 1 / K * math.exp(-rate * ExpT) * norm.cdf(d2)) - Price
 
-        # give approximated implied vol as the initial guess
-        # Price, ExpT, F, K, rate, Option_Type = input
-        # approx = math.sqrt(2*math.pi/ExpT)*Price/F
-        return fsolve(Vol_fun, np.array(1, dtype=float), args=input)[0]   # solve Implied Vol
+        result = fsolve(Vol_fun, np.array(1, dtype=float), args=input,
+                        full_output=True)   # solve Implied Vol
+
+        # output NA is the solution was not found
+        if result[2]==0:
+            return None
+        else:
+            return result[0][0]
 
     def _price_calculator(self, *data_in):
         ExpT, F, K, rate, vol, Option_Type = data_in
