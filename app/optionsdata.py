@@ -1,8 +1,11 @@
 # sudo pip install deribit-api
 from deribit_api import RestClient
 from scipy.optimize import fsolve
+import scipy.interpolate as it
 from scipy.stats import norm
 from datetime import datetime
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
 import pandas as pd
 import math
 import numpy as np
@@ -45,22 +48,14 @@ class option_data:
         data['InitialDate'] = [pd.to_datetime(data_tmp[i][0]) for i in range(len(data))]
         # convert Expiration Date
         data['ExpirationDate'] = pd.to_datetime(data['ExpirationDate'], format='%d%b%y')
-        return data
-
-    def _download_future_price(self):
-        data = self.client.getsummary('future')
-        data = pd.DataFrame.from_dict(data=data)
-        # split strings to get date and type
-        data_tmp = data['instrumentName'].str.split('-')
-        data['ExpirationDate'] = [data_tmp[i][1] for i in range(len(data))]
-        # convert Expiration Date
-        data['ExpirationDate'] = pd.to_datetime(data['ExpirationDate'], format='%d%b%y')
+        data['Texp'] = [(data.loc[i, 'ExpirationDate'] - datetime.now()).days/365 \
+                        for i in range(data.shape[0])]
         return data
 
     def generate_implied_vol(self):
         # Option Price, Expiration, Future price, Strike, interest rate, Option Type
         input_data = pd.Series([tuple([self.data.loc[i, 'markPrice'],
-                                (self.data.loc[i, 'ExpirationDate'] - datetime.now()).days/365,
+                                self.data.loc[i, 'Texp'],
                                 self.data.loc[i, 'uPx'],
                                 self.data.loc[i, 'Strike'],
                                 self.rate,
@@ -103,3 +98,18 @@ class option_data:
             return K * (1 / K * norm.cdf(-d2) * math.exp(-rate * ExpT) - 1 / F * norm.cdf(-d1))
         elif Option_Type == 'P':
             return K * (1 / F * norm.cdf(d1) - 1 / K * math.exp(-rate * ExpT) * norm.cdf(d2))
+
+    def show_iv_surface(self):
+        """Plot the implied vol surface"""
+        # use spline to get the surface matrix
+        tck = it.bisplrep(self.data['Strike'], self.data['Texp'], self.data['Implied_Vol'])
+        Strikeline = np.linspace(np.min(self.data['Strike']), np.max(self.data['Strike']), 20)
+        timeline = np.linspace(np.min(self.data['Texp']), np.max(self.data['Texp']), 20)
+        X, Y = np.meshgrid(Strikeline, timeline)
+        Z = it.bisplev(Strikeline, timeline, tck)
+        ax = plt.axes(projection='3d')
+        ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
+                        cmap='viridis', edgecolor='none')
+        ax.set_title('surface');
+
+
