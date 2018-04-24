@@ -46,7 +46,7 @@ class option_data:
         data['Strike'] = [int(data_tmp[i][2]) for i in range(len(data))]
         data['OptionType'] = [data_tmp[i][3] for i in range(len(data))]
         # moneyness
-        data['Moneyness'] = np.log(data['uPx']/data['Strike'])
+        data['Moneyness'] = -np.log(data['uPx']/data['Strike'])   # the moneyness should be reversed to normal option
         # get the time when the option is created
         data_tmp = data['created'].str.split(' ')
         data['InitialDate'] = [pd.to_datetime(data_tmp[i][0]) for i in range(len(data))]
@@ -56,7 +56,10 @@ class option_data:
         data['Texp'] = [(data.loc[i, 'ExpirationDate'] - now).total_seconds()/365/24/60/60 \
                         for i in range(data.shape[0])]
         # filter the strike with proper range
-        condition = np.array([min_K <= data.loc[i, 'Strike'] <= max_K for i in range(data.shape[0])])
+        condition = np.array([min_K*(1 - np.sqrt(data.loc[i, 'Texp']))
+                              <= data.loc[i, 'Strike'] <=
+                              max_K*( 1+ np.sqrt(data.loc[i, 'Texp']))
+                              for i in range(data.shape[0])])
         data = data.loc[np.where(condition)[0],:]
         data = data.reindex(index=range(data.shape[0]))
         return data
