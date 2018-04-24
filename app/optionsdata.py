@@ -99,17 +99,21 @@ class option_data:
         elif Option_Type == 'P':
             return K * (1 / F * norm.cdf(d1) - 1 / K * math.exp(-rate * ExpT) * norm.cdf(d2))
 
-    def show_iv_surface(self):
+    def show_iv_surface(self, option_type='C'):
         """Plot the implied vol surface"""
+        subset = self.data.loc[self.data['OptionType']==option_type,:]
         # use spline to get the surface matrix
-        tck = it.bisplrep(self.data['Strike'], self.data['Texp'], self.data['Implied_Vol'])
-        Strikeline = np.linspace(np.min(self.data['Strike']), np.max(self.data['Strike']), 20)
-        timeline = np.linspace(np.min(self.data['Texp']), np.max(self.data['Texp']), 20)
+        tck = it.bisplrep(subset['Strike'], subset['Texp'], subset['Implied_Vol'])
+        Strikeline = np.linspace(np.min(subset['Strike']), np.max(subset['Strike']), 20)
+        timeline = np.linspace(np.min(subset['Texp']), np.max(subset['Texp']), 20)
         X, Y = np.meshgrid(Strikeline, timeline)
         Z = it.bisplev(Strikeline, timeline, tck)
         ax = plt.axes(projection='3d')
         ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
                         cmap='viridis', edgecolor='none')
-        ax.set_title('surface');
+        ax.set_zlim(np.min(subset['Implied_Vol'])-0.1, np.max(subset['Implied_Vol'])+0.1)
+        ax.scatter(subset['Strike'], subset['Texp'], subset['Implied_Vol'])
+        plt.show()
+
 
 
