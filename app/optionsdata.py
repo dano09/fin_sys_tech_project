@@ -2,6 +2,7 @@
 from deribit_api import RestClient
 from scipy.optimize import fsolve
 import scipy.interpolate as it
+import itertools
 from scipy.optimize import curve_fit
 from scipy.stats import norm
 from datetime import datetime
@@ -76,6 +77,34 @@ class option_data:
 
         return input_data.apply(self._calculate_implied_vol)
 
+    def get_date(self, option_type='C'):
+        # get subset
+        # consider specified option type
+        if option_type == 'C' or option_type == 'P':
+            subset = self.data.loc[self.data['OptionType'] == option_type, :]
+        # consider subset with moneyness >= 0 for call and moneyness <0 for put
+        else:
+            condition = [(self.data.loc[i, 'Moneyness'] >= 0 and self.data.loc[i, 'OptionType'] == 'C') or
+                         (self.data.loc[i, 'Moneyness'] < 0 and self.data.loc[i, 'OptionType'] == 'P')
+                         for i in range(self.data.shape[0])]
+            subset = self.data.loc[np.where(condition)[0], :]
+
+        return np.unique(subset['ExpriationDate'])
+
+    def get_strike(self, option_type='C'):
+        # get subset
+        # consider specified option type
+        if option_type == 'C' or option_type == 'P':
+            subset = self.data.loc[self.data['OptionType'] == option_type, :]
+        # consider subset with moneyness >= 0 for call and moneyness <0 for put
+        else:
+            condition = [(self.data.loc[i, 'Moneyness'] >= 0 and self.data.loc[i, 'OptionType'] == 'C') or
+                         (self.data.loc[i, 'Moneyness'] < 0 and self.data.loc[i, 'OptionType'] == 'P')
+                         for i in range(self.data.shape[0])]
+            subset = self.data.loc[np.where(condition)[0], :]
+
+        return np.unique(subset['Strike'])
+
     def _calculate_implied_vol(self, input=(1.6, 1, 20, 20, 0.05, 'C')):
         """The input should be Option Price, Expiration, Future Price, Strike, interest rate, Option Type
         Pricing reference: https://quedex.net/edu/options """
@@ -111,7 +140,7 @@ class option_data:
         elif Option_Type == 'P':
             return K * (1 / F * norm.cdf(d1) - 1 / K * math.exp(-rate * ExpT) * norm.cdf(d2))
 
-    def plot_iv(self, option_type='A'):
+    def plot_iv(self):
         """Plot the implied vol surface"""
         subset = self.data
         subset1 = subset.loc[subset['OptionType'] == 'C', :]
@@ -126,11 +155,11 @@ class option_data:
         ax.set_zlabel('Implied Vol')
         plt.show()
 
-    def output_iv_matrix(self, option_type='A', size=(50,50)):
-        """Output the fitted implied vol matrix"""
+    def fitting(self, option_type='A', size=(50,50)):
+        """Fit the implied vol for each maturity date and output the fitting in vector form"""
         # get subset
         # consider specified option type
-        if option_type == 'C' or option_type=='P':
+        if option_type == 'C' or option_type == 'P':
             subset = self.data.loc[self.data['OptionType'] == option_type, :]
         # consider subset with moneyness >= 0 for call and moneyness <0 for put
         else:
@@ -141,8 +170,10 @@ class option_data:
 
         # interpolate the implied vol for every maturity====================
         # interpolation function:
+        # This function do not work well for the first maturity; I'm using 2nd poly for the first
         def iv_curve(k, a, b, rho, m, sigma):
-            return a+b*(rho*(k-m)+np.sqrt((k-m)**2+sigma**2))
+            return a + b * (rho * (k - m) + np.sqrt((k - m) ** 2 + sigma ** 2))
+
         # how many maturities
         time = np.unique(subset['Texp'])
         N_time = time.shape[0]
@@ -151,22 +182,70 @@ class option_data:
         fitted_x = np.array([])
         fitted_y = np.array([])
         fitted_z = np.array([])
-        size_x, size_y = size   # size of the matrix
-        strikeline = np.linspace(np.min(subset['Moneyness']), np.max(subset['Moneyness']), size_x)
+        size_x, size_y = size  # size of the matrix
+        moneyness = np.linspace(np.min(subset['Moneyness']), np.max(subset['Moneyness']), size_x)
         timeline = np.linspace(np.min(subset['Texp']), np.max(subset['Texp']), size_y)
 
         # interpolate every maturity
-        for i in range(N_time):
+        # interpolate the first one
+        subset_sub = subset.loc[subset['Texp'] == time[0], :]
+        popt= np.polyfit(subset_sub['Moneyness'].values, subset_sub['Implied_Vol'].values, 2)
+        foo = np.poly1d(popt)
+        fitted_x = np.append(fitted_x, moneyness)
+        fitted_y = np.append(fitted_y, np.ones(size_y) * time[0])
+        fitted_z = np.append(fitted_z, foo(moneyness))
+        for i in range(1,N_time):
             subset_sub = subset.loc[subset['Texp'] == time[i],:]
             popt, pcov = curve_fit(iv_curve, subset_sub['Moneyness'].values, subset_sub['Implied_Vol'].values)
-            fitted_x = np.append(fitted_x, strikeline)
+            fitted_x = np.append(fitted_x, moneyness)
             fitted_y = np.append(fitted_y, np.ones(size_y)*time[i])
-            fitted_z = np.append(fitted_z, iv_curve(strikeline, *popt))
+            fitted_z = np.append(fitted_z, iv_curve(moneyness, *popt))
+        return fitted_x, fitted_y, fitted_z
+
+    def output_iv_matrix(self, option_type='A', size=(50,50)):
+        """Output the fitted implied vol matrix"""
+        # get subset
+        # consider specified option type
+        if option_type == 'C' or option_type == 'P':
+            subset = self.data.loc[self.data['OptionType'] == option_type, :]
+        # consider subset with moneyness >= 0 for call and moneyness <0 for put
+        else:
+            condition = [(self.data.loc[i, 'Moneyness'] >= 0 and self.data.loc[i, 'OptionType'] == 'C') or
+                         (self.data.loc[i, 'Moneyness'] < 0 and self.data.loc[i, 'OptionType'] == 'P')
+                         for i in range(self.data.shape[0])]
+            subset = self.data.loc[np.where(condition)[0], :]
+        size_x, size_y = size  # size of the matrix
+        moneyness = np.linspace(np.min(subset['Moneyness']), np.max(subset['Moneyness']), size_x)
+        timeline = np.linspace(np.min(subset['Texp']), np.max(subset['Texp']), size_y)
+
+        fitted_x, fitted_y, fitted_z= self.fitting(option_type, size)
+
+        def polyfit2d(x, y, z, order=2):
+            ncols = (order + 1) ** 2
+            G = np.zeros((x.size, ncols))
+            ij = itertools.product(range(order + 1), range(order + 1))
+            for k, (i, j) in enumerate(ij):
+                G[:, k] = x ** i * y ** j
+            m, _, _, _ = np.linalg.lstsq(G, z)
+            return m
+
+        def polyval2d(x, y, m):
+            order = int(np.sqrt(len(m))) - 1
+            ij = itertools.product(range(order + 1), range(order + 1))
+            z = np.zeros_like(x)
+            for a, (i, j) in zip(m, ij):
+                z += a * x ** i * y ** j
+            return z
 
         # use spline to get the full surface matrix
-        tck = it.bisplrep(fitted_x, fitted_y, fitted_z)
-        Z = it.bisplev(strikeline, timeline, tck)
-        return strikeline, timeline, Z
+        # tck = it.bisplrep(fitted_x, fitted_y, fitted_z)
+        # Z = it.bisplev(moneyness, timeline, tck)
+
+        # use polynomial to get the full surface matrix
+        m = polyfit2d(fitted_x, fitted_y, fitted_z)
+        xx, yy = np.meshgrid(moneyness, timeline)
+        Z = polyval2d(xx, yy, m)
+        return moneyness, timeline, Z
 
     def plot_iv_surface(self,  option_type='A', size=(50,50)):
         # get subset
@@ -207,29 +286,13 @@ class option_data:
                          for i in range(self.data.shape[0])]
             subset = self.data.loc[np.where(condition)[0], :]
 
-        # interpolate the implied vol for every maturity====================
-        # interpolation function:
-        def iv_curve(k, a, b, rho, m, sigma):
-            return a+b*(rho*(k-m)+np.sqrt((k-m)**2+sigma**2))
-        # how many maturities
-        time = np.unique(subset['Texp'])
-        N_time = time.shape[0]
-
-        # initiate solution
-        size_x, size_y = size
-        strikeline = np.linspace(np.min(subset['Moneyness']), np.max(subset['Moneyness']), size_x)
-        timeline = np.linspace(np.min(subset['Texp']), np.max(subset['Texp']), size_y)
-
+        fitted_x, fitted_y, fitted_z = self.fitting(option_type, size)
         # interpolate every maturity
         ax = plt.axes(projection='3d')
-        for i in range(N_time):
-            subset_sub = subset.loc[subset['Texp'] == time[i],:]
-            popt, pcov = curve_fit(iv_curve, subset_sub['Moneyness'].values, subset_sub['Implied_Vol'].values)
-            fitted_x = strikeline
-            fitted_y = np.ones(size_y)*time[i]
-            fitted_z = iv_curve(strikeline, *popt)
-
-            ax.plot(xs=fitted_x, ys=fitted_y, zs=fitted_z)
+        for Texp in np.unique(subset['Texp']):
+            ax.plot(xs=fitted_x[np.where(fitted_y==Texp)],
+                    ys=fitted_y[np.where(fitted_y==Texp)],
+                    zs=fitted_z[np.where(fitted_y==Texp)])
         ax.scatter(subset['Moneyness'], subset['Texp'], subset['Implied_Vol'])
         ax.set_zlim(np.min(subset['Implied_Vol']) - 0.1, np.max(subset['Implied_Vol']) + 0.1)
         ax.set_title('Fitted Implied Vol')
