@@ -1,22 +1,16 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2> Cryptocurrency Data Display</h2>
-    <form action="/get_symbol_id_for_exchange"  method="post">
-        <dl>
-            <div>Pick an exchange</div>
-            {{ exchangeform.exchanges }}
-        </dl>
-        <p> {{ exchangeform.submit() }} </p>
-    </form>
-    <form action="/simulation"  method="post">
-        <dl>
-            <div>What's your start date?</div>
-            {{ exchangeform.start }}
-            <div>What's your end date?</div>
-            {{ exchangeform.end }}
-        </dl>
-        <p> {{ exchangeform.submit() }} </p>
-    </form>
-{% endblock %}
+<h2> Cryptocurrency Data Display</h2>
+
+<form action="/simulation" method="post">
+    <dl>
+        <div>From</div>
+        {{ form.start }}
+        <div>To</div>
+        {{ form.end }}
+    </dl>
+    <p> {{ form.submit() }} </p>
+</form>
+        {% endblock %}
 
