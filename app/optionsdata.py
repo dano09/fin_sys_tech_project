@@ -36,6 +36,7 @@ class option_data:
         self.data = self._download_option_price(min_K, max_K)
         # calculate implied vol
         self.data['Implied_Vol'] = self.generate_implied_vol()
+        self.future_data = self._download_future_price()
 
     def _download_option_price(self, min_K, max_K):
         data = self.client.getsummary('option')
@@ -65,6 +66,18 @@ class option_data:
         data = data.reindex(index=range(data.shape[0]))
         return data
 
+    def _download_future_price(self):
+        data = self.client.getsummary('future')
+        # convert this list of dictionaries into data frame
+        data = pd.DataFrame.from_dict(data=data)
+        # split strings to get date and type
+        data_tmp = data['instrumentName'].str.split('-')
+        data['ExpirationDate'] = [data_tmp[i][1] for i in range(len(data))]
+        data['ExpirationDate'] = pd.to_datetime(data['ExpirationDate'], format='%d%b%y')
+        return data
+
+    # ======================================================================Calculator methods
+
     def generate_implied_vol(self):
         # Option Price, Expiration, Future price, Strike, interest rate, Option Type
         input_data = pd.Series([tuple([self.data.loc[i, 'markPrice'],
@@ -76,34 +89,6 @@ class option_data:
                                 ) for i in range(self.data.shape[0])])
 
         return input_data.apply(self._calculate_implied_vol)
-
-    def get_date(self, option_type='C'):
-        # get subset
-        # consider specified option type
-        if option_type == 'C' or option_type == 'P':
-            subset = self.data.loc[self.data['OptionType'] == option_type, :]
-        # consider subset with moneyness >= 0 for call and moneyness <0 for put
-        else:
-            condition = [(self.data.loc[i, 'Moneyness'] >= 0 and self.data.loc[i, 'OptionType'] == 'C') or
-                         (self.data.loc[i, 'Moneyness'] < 0 and self.data.loc[i, 'OptionType'] == 'P')
-                         for i in range(self.data.shape[0])]
-            subset = self.data.loc[np.where(condition)[0], :]
-
-        return np.unique(subset['ExpriationDate'])
-
-    def get_strike(self, option_type='C'):
-        # get subset
-        # consider specified option type
-        if option_type == 'C' or option_type == 'P':
-            subset = self.data.loc[self.data['OptionType'] == option_type, :]
-        # consider subset with moneyness >= 0 for call and moneyness <0 for put
-        else:
-            condition = [(self.data.loc[i, 'Moneyness'] >= 0 and self.data.loc[i, 'OptionType'] == 'C') or
-                         (self.data.loc[i, 'Moneyness'] < 0 and self.data.loc[i, 'OptionType'] == 'P')
-                         for i in range(self.data.shape[0])]
-            subset = self.data.loc[np.where(condition)[0], :]
-
-        return np.unique(subset['Strike'])
 
     def _calculate_implied_vol(self, input=(1.6, 1, 20, 20, 0.05, 'C')):
         """The input should be Option Price, Expiration, Future Price, Strike, interest rate, Option Type
@@ -139,21 +124,6 @@ class option_data:
             return K * (1 / K * norm.cdf(-d2) * math.exp(-rate * ExpT) - 1 / F * norm.cdf(-d1))
         elif Option_Type == 'P':
             return K * (1 / F * norm.cdf(d1) - 1 / K * math.exp(-rate * ExpT) * norm.cdf(d2))
-
-    def plot_iv(self):
-        """Plot the implied vol surface"""
-        subset = self.data
-        subset1 = subset.loc[subset['OptionType'] == 'C', :]
-        subset2 = subset.loc[subset['OptionType'] == 'P', :]
-        ax = plt.axes(projection='3d')
-        ax.scatter(subset1['Strike'], subset1['Texp'], subset1['Implied_Vol'], c='r')
-        ax.scatter(subset2['Strike'], subset2['Texp'], subset2['Implied_Vol'], c='b')
-        ax.set_zlim(np.min(subset['Implied_Vol']) - 0.1, np.max(subset['Implied_Vol']) + 0.1)
-        ax.set_title('Implied Vol of Call and Put')
-        ax.set_xlabel('Strike')
-        ax.set_ylabel('Maturity')
-        ax.set_zlabel('Implied Vol')
-        plt.show()
 
     def fitting(self, option_type='A', size=(50,50)):
         """Fit the implied vol for each maturity date and output the fitting in vector form"""
@@ -202,6 +172,76 @@ class option_data:
             fitted_z = np.append(fitted_z, iv_curve(moneyness, *popt))
         return fitted_x, fitted_y, fitted_z
 
+    def iv_interpolation(self, ExpDate, strike, option_type='A'):
+        """Output the linear interpolated implied vol by selection"""
+        """Fit the implied vol for each maturity date and output the fitting in vector form"""
+        # get subset
+        # consider specified option type
+        if option_type == 'C' or option_type == 'P':
+            subset = self.data.loc[self.data['OptionType'] == option_type and
+                                   self.data['ExpirationDate'] == ExpDate, :]
+        # consider subset with moneyness >= 0 for call and moneyness <0 for put
+        else:
+            condition = [(self.data.loc[i, 'Moneyness'] >= 0 and self.data.loc[i, 'OptionType'] == 'C') or
+                         (self.data.loc[i, 'Moneyness'] < 0 and self.data.loc[i, 'OptionType'] == 'P')
+                         for i in range(self.data.shape[0])]
+            subset = self.data.loc[np.where(condition)[0], :]
+            subset = subset.loc[subset['ExpirationDate'] == ExpDate, :]
+
+        # interpolate the implied vol for every maturity====================
+        # interpolation function:
+        # This function do not work well for the first maturity; I'm using 2nd poly for the first maturity
+        def iv_curve(k, a, b, rho, m, sigma):
+            return a + b * (rho * (k - m) + np.sqrt((k - m) ** 2 + sigma ** 2))
+
+        # moneyness of this strike
+        F = self.future_data.loc[self.future_data['ExpirationDate']==ExpDate, 'markPrice'].values[0]
+        moneyness =  -np.log(F/strike)
+        # which maturity date?
+        ExpDate_id = np.where([i==ExpDate for i in np.unique(subset['ExpirationDate'])])[0]
+        # interpolate the first one using 2nd order poly
+        if ExpDate_id == 0:
+            popt= np.polyfit(subset['Moneyness'].values, subset['Implied_Vol'].values, 2)
+            foo = np.poly1d(popt)
+            return foo(moneyness)
+        else:
+            popt, pcov = curve_fit(iv_curve, subset['Moneyness'].values, subset['Implied_Vol'].values)
+            return iv_curve(moneyness, *popt)
+
+    def generate_distribution(self, imp_vol):
+        """generate the distribution of asset price at maturity according to the implied vol"""
+
+
+    # =====================================================================data output methods
+
+    def get_date(self, option_type='C'):
+        # get subset
+        # consider specified option type
+        if option_type == 'C' or option_type == 'P':
+            subset = self.data.loc[self.data['OptionType'] == option_type, :]
+        # consider subset with moneyness >= 0 for call and moneyness <0 for put
+        else:
+            condition = [(self.data.loc[i, 'Moneyness'] >= 0 and self.data.loc[i, 'OptionType'] == 'C') or
+                         (self.data.loc[i, 'Moneyness'] < 0 and self.data.loc[i, 'OptionType'] == 'P')
+                         for i in range(self.data.shape[0])]
+            subset = self.data.loc[np.where(condition)[0], :]
+
+        return np.unique(subset['ExpirationDate'])
+
+    def get_strike(self, option_type='C'):
+        # get subset
+        # consider specified option type
+        if option_type == 'C' or option_type == 'P':
+            subset = self.data.loc[self.data['OptionType'] == option_type, :]
+        # consider subset with moneyness >= 0 for call and moneyness <0 for put
+        else:
+            condition = [(self.data.loc[i, 'Moneyness'] >= 0 and self.data.loc[i, 'OptionType'] == 'C') or
+                         (self.data.loc[i, 'Moneyness'] < 0 and self.data.loc[i, 'OptionType'] == 'P')
+                         for i in range(self.data.shape[0])]
+            subset = self.data.loc[np.where(condition)[0], :]
+
+        return np.unique(subset['Strike'])
+
     def output_iv_matrix(self, option_type='A', size=(50,50)):
         """Output the fitted implied vol matrix"""
         # get subset
@@ -246,6 +286,22 @@ class option_data:
         xx, yy = np.meshgrid(moneyness, timeline)
         Z = polyval2d(xx, yy, m)
         return moneyness, timeline, Z
+
+    # =====================================================================data viz methods
+    def plot_iv(self):
+        """Plot the implied vol surface"""
+        subset = self.data
+        subset1 = subset.loc[subset['OptionType'] == 'C', :]
+        subset2 = subset.loc[subset['OptionType'] == 'P', :]
+        ax = plt.axes(projection='3d')
+        ax.scatter(subset1['Strike'], subset1['Texp'], subset1['Implied_Vol'], c='r')
+        ax.scatter(subset2['Strike'], subset2['Texp'], subset2['Implied_Vol'], c='b')
+        ax.set_zlim(np.min(subset['Implied_Vol']) - 0.1, np.max(subset['Implied_Vol']) + 0.1)
+        ax.set_title('Implied Vol of Call and Put')
+        ax.set_xlabel('Strike')
+        ax.set_ylabel('Maturity')
+        ax.set_zlabel('Implied Vol')
+        plt.show()
 
     def plot_iv_surface(self,  option_type='A', size=(50,50)):
         # get subset
