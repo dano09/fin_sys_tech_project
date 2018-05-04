@@ -14,13 +14,14 @@ class HelloForm(FlaskForm):
     submit = SubmitField('Say Hello')
     barc = IntegerField('Count:', validators=[DataRequired()])
     showme = SubmitField('Plot')
-    OPrice = StringField('Option Price', validators=[DataRequired()])
+
+    Otype = SelectField('Option Type', choices=[('Call Option', 'Call'),('Put Option', 'Put')],description='* Select the option type you go long with.')
+    Hratio = StringField('Hedge Ratio', validators=[DataRequired()])
     ExpT = SelectField('Maturity', choices=[('One Week', '1W'),('One Month', '1M'),('Three Month', '3M')])
     S = StringField('Current Stock Price', validators=[DataRequired()])
     K = StringField('Strike Price', validators=[DataRequired()])
     rate = StringField('Interest Rate', validators=[DataRequired()])
-    Otype = SelectField('Option Type', choices=[('Call Option', 'Buy'),('Put Option', 'Sell')])
-    iVol = SubmitField('Show me IVol')
+    sbm = SubmitField('Simulate')
     
 
 class LoginForm(FlaskForm):
@@ -50,13 +51,6 @@ class RegistrationForm(FlaskForm):
 
 
 class SimulationForm(FlaskForm):
-    ds = Dataservices()
-    exchange_choices = ds.get_exchanges()
-
-    exchange_list = [(ex, ex) for ex in exchange_choices]
-    #print('exchange_list is: {}'.format(exchange_list))
-
-    exchanges = SelectField(label='Exchanges', choices=exchange_list)
     start = DateField('startDate', format='%Y-%m-%d')
     end = DateField('endDate', format='%Y-%m-%d')
     submit = SubmitField('Show Data')

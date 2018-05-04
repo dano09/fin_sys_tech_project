@@ -1,33 +1,37 @@
 body {
     font-family: sans-serif;
-    background: #eee;
+    background: #F0FFF0;
+    font-size: 1.5em;
 }
 
 head {
     font-family: Arial, Helvetica, sans-serif;
-    color: orange;
-    font-size: 2em;
+    color: #ffffe6;
+    font-size: 0.2em;
 }
 
-a, h1, h2 {
-    color: #377ba8;
+
+a {
+    color: #330066;
 }
+
 
 h1, h2 {
-    font-family: 'Georgia', serif;
-    margin: 0;
+    font-family: Corbel;
+    color: #ff8000;
 }
+
 
 h1 {
     border-bottom: 2px solid #eee;
 }
 
 h2 {
-    font-size: 1.2em;
+    font-size: 1.5em;
 }
 
 .myheader {
-    color: orange
+    color: #FF4500
 }
 
 .page {

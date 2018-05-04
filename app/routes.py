@@ -23,8 +23,6 @@ def index():
     return render_template('index.html', title='Home', form=form)
 
 
-
-
 @app.route('/hello', methods=['POST'])
 def hello():
     print('inside /hello route')
@@ -120,8 +118,8 @@ def register():
 @app.route('/start_simulation')
 def start_simulation():
     print('inside /start_simulation route')
-    form = SimulationExchangeForm(request.form)
-    return render_template('simulation.html', title='Simulation', exchangeform=form)
+    form = SimulationForm(request.form)
+    return render_template('simulation.html', title='Simulation', form=form)
 
 
 @app.route('/simulation', methods=['GET', 'POST'])
@@ -192,7 +190,7 @@ def option():
 
     if request.method == 'POST':
         print('got here xD')
-        OPrice = request.form['OPrice']
+        Hratio = request.form['Hratio']
         ExpT = request.form['ExpT']
         S = request.form['S']
         K = request.form['K']
@@ -206,7 +204,7 @@ def option():
         #print('data is : {}'.format(name))
         plot = create_vol_chart(option_data(rate).data['Implied_Vol'], option_data(rate).data['Strike'])
         script, div = components(plot)
-        return render_template('result.html', title='Input result', Price=OPrice, T=ExpT, S=S, K=K, i=rate, O=Otype, vol=volresult.to_html(), div=div, script=script)
+        return render_template('result.html', title='Input result', Price=Hratio, T=ExpT, S=S, K=K, i=rate, O=Otype, vol=volresult.to_html(), div=div, script=script)
 
     #print('About to redirect to index')
     return render_template('index.html', form=form)

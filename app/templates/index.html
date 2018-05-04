@@ -18,12 +18,19 @@
 </form>
     -->
 <form action="/option" method="post">
-    <h2> Input (Calculate Implied Vol)</h2>
+    <h2> User Input </h2>
     {{ form.hidden_tag() }}
     <p>
-        {{ form.OPrice.label }}<br>
-        {{ form.OPrice(size=32) }}<br>
-        {% for error in form.OPrice.errors %}
+        {{ form.Otype.label }}<br>
+        {{ form.Otype }}<br>
+        {% for error in form.Otype.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.Hratio.label }}<br>
+        {{ form.Hratio(size=32) }}<br>
+        {% for error in form.Hratio.errors %}
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
     </p>
@@ -35,19 +42,20 @@
         {% endfor %}
     </p>
     <p>
-        {{ form.S.label }}<br>
-        {{ form.S(size=32) }}<br>
-        {% for error in form.S.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-    </p>
-    <p>
         {{ form.K.label }}<br>
         {{ form.K(size=32) }}<br>
         {% for error in form.K.errors %}
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
     </p>
+    <!--
+        <p>
+            {{ form.S.label }}<br>
+            {{ form.S(size=32) }}<br>
+            {% for error in form.S.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>-->
     <p>
         {{ form.rate.label }}<br>
         {{ form.rate(size=32) }}<br>
@@ -55,14 +63,7 @@
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
     </p>
-    <p>
-        {{ form.Otype.label }}<br>
-        {{ form.Otype }}<br>
-        {% for error in form.Otype.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-    </p>
-    <p> {{ form.iVol() }} </p>
+    <p> {{ form.sbm() }} </p>
 </form>
 
-    {% endblock %}
+        {% endblock %}
