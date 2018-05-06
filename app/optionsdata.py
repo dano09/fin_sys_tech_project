@@ -211,7 +211,10 @@ class option_data:
         return fitted_z[fitted_y == ExpT][0]
 
     def prob_of_make_money(self, ExpT_id, strike, option_type='C'):
-        """calculate the probability of making money at maturity according to the implied vol"""
+        """calculate the probability of making money at maturity according to the implied vol
+        strike: any user defined strike price. must be integers
+        ExpT_id: which expiration date to use. e.g. 0 means the first future expiration
+        """
         ExpT = self.get_date_annual()[ExpT_id]
         ExpDate = self.get_date()[ExpT_id]
         imp_vol = self.iv_interpolation(ExpDate, strike, ExpT, option_type)
@@ -232,7 +235,12 @@ class option_data:
             return norm.cdf(-d2)
 
     def PnL(self, strike, ExpT_id, option_size = 1, option_type='C', price_range=None):
-        """output the PnL vector at the maturity using hedge ratio"""
+        """output the PnL vector at the maturity using hedge ratio
+        strike: any user defined strike price. must be integers
+        ExpT_id: which expiration date to use. e.g. 0 means the first future expiration
+        option_size: the size of the contract
+        option_type
+        price_range: used for the plotting purpose"""
         ExpT = self.get_date_annual()[ExpT_id]
         ExpDate = self.get_date()[ExpT_id]
         imp_vol = self.iv_interpolation(ExpDate, strike, ExpT)
