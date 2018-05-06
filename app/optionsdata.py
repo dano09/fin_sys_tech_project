@@ -429,3 +429,22 @@ class option_data:
         plt.show()
 
 
+class date_selection:
+    def __init__(self, interest_rate=0, K_range=(0, math.inf)):
+        # this is my account. Don't share it to others. But I don't have money in it :P
+        self.client = RestClient('2SQfDzW1Kaf3F', 'HOG2A2HCYERM2YONRBTYEBMYRZ2ESN3K')
+        self.client.index()
+        self.client.account()
+        data = self.client.getsummary('future')
+        # convert this list of dictionaries into data frame
+        data = pd.DataFrame.from_dict(data=data)
+        # split strings to get date and type
+        data_tmp = data['instrumentName'].str.split('-')
+        data['ExpirationDate'] = [data_tmp[i][1] for i in range(len(data))]
+        data['ExpirationDate'] = pd.to_datetime(data['ExpirationDate'], format='%d%b%y')
+        self.data = data
+
+    def get_date(self):
+        dates = pd.Series.sort_values(self.data['ExpirationDate'])
+        dates = dates.reset_index(drop=True)
+        return dates

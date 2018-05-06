@@ -35,9 +35,9 @@
         {% endfor %}
     </p>
     <p>
-        {{ form.ExpT.label }}<br>
-        {{ form.ExpT }}<br>
-        {% for error in form.ExpT.errors %}
+        {{ form.ExpT_id.label }}<br>
+        {{ form.ExpT_id }}<br>
+        {% for error in form.ExpT_id.errors %}
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
     </p>
@@ -48,14 +48,6 @@
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
     </p>
-    <!--
-        <p>
-            {{ form.S.label }}<br>
-            {{ form.S(size=32) }}<br>
-            {% for error in form.S.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>-->
     <p>
         {{ form.rate.label }}<br>
         {{ form.rate(size=32) }}<br>
@@ -63,7 +55,7 @@
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
     </p>
-    <p> {{ form.sbm() }} </p>
+    <p> {{ form.submit() }} </p>
 </form>
 
         {% endblock %}

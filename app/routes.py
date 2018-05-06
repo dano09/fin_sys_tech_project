@@ -189,22 +189,18 @@ def option():
     form = HelloForm(request.form)
 
     if request.method == 'POST':
-        print('got here xD')
+        Otype = request.form['Otype']
         Hratio = request.form['Hratio']
-        ExpT = request.form['ExpT']
-        S = request.form['S']
+        ExpT_id = request.form['ExpT_id']
         K = request.form['K']
         rate = request.form['rate']
-        Otype = request.form['Otype']
 
-        volresult = pd.DataFrame(option_data(rate).data['Implied_Vol'])
-
-        print('vol result is: {}'.format(volresult))
-
-        #print('data is : {}'.format(name))
-        plot = create_vol_chart(option_data(rate).data['Implied_Vol'], option_data(rate).data['Strike'])
+        myoption = option_data(rate)
+        mydata = myoption.data.loc[myoption.data['ExpirationDate']==ExpT_id, :]
+        plot = create_vol_chart(mydata['Implied_Vol'], mydata['Strike'])
         script, div = components(plot)
-        return render_template('result.html', title='Input result', Price=Hratio, T=ExpT, S=S, K=K, i=rate, O=Otype, vol=volresult.to_html(), div=div, script=script)
+        return render_template('result.html', title='Input result', Hratio=Hratio, T=ExpT_id.strftime('%Y-%m-%d'),
+                               K=K, i=rate, O=Otype, div=div, script=script)
 
     #print('About to redirect to index')
     return render_template('index.html', form=form)

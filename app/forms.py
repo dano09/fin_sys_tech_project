@@ -3,6 +3,7 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField, Integ
 from wtforms.validators import DataRequired, ValidationError, Email, EqualTo, Length
 
 from app import dataservices
+from app.optionsdata import date_selection
 from app.dataservices import Dataservices
 from app.models import User
 from wtforms.fields.html5 import DateField
@@ -10,18 +11,18 @@ from wtforms.fields import SelectField
 
 
 class HelloForm(FlaskForm):
-    sayhello = StringField('Greeting: ', validators=[DataRequired()])
-    submit = SubmitField('Say Hello')
-    barc = IntegerField('Count:', validators=[DataRequired()])
     showme = SubmitField('Plot')
-
-    Otype = SelectField('Option Type', choices=[('Call Option', 'Call'),('Put Option', 'Put')],description='* Select the option type you go long with.')
+    Otype = SelectField('Option Type', choices=[('Put', 'Long Position w/ Hedge'),('Call', 'Short Position w/ Hedge')],
+                        description='Select the option type you go long with.')
     Hratio = StringField('Hedge Ratio', validators=[DataRequired()])
-    ExpT = SelectField('Maturity', choices=[('One Week', '1W'),('One Month', '1M'),('Three Month', '3M')])
-    S = StringField('Current Stock Price', validators=[DataRequired()])
+    dates_obj = date_selection()
+    dates = dates_obj.get_date()
+    ExpT_id = SelectField('Maturity', choices=[(dates[0], dates[0].strftime('%Y-%m-%d')),
+                                            (dates[1], dates[1].strftime('%Y-%m-%d')),
+                                            (dates[2], dates[2].strftime('%Y-%m-%d'))])
     K = StringField('Strike Price', validators=[DataRequired()])
     rate = StringField('Interest Rate', validators=[DataRequired()])
-    sbm = SubmitField('Simulate')
+    submit = SubmitField('Simulate')
     
 
 class LoginForm(FlaskForm):
@@ -70,11 +71,15 @@ class SimulationExchangeForm(FlaskForm):
 
 
 class OptionForm(FlaskForm):
-    OPrice = StringField('Option Price', validators=[DataRequired()])
-    ExpT = SelectField('Maturity', choices=[('One Week', '1W'),('One Month', '1M'),('Three Month', '3M')])
-    S = StringField('Current Stock Price', validators=[DataRequired()])
+    Otype = SelectField('Option Type', choices=[('P', 'Long Position w/ Hedge'),('C', 'Short Position w/ Hedge')],
+                        description='Select the option type you go long with.')
+    Hratio = StringField('Hedge Ratio', validators=[DataRequired()])
+    dates_obj = date_selection()
+    dates = dates_obj.get_date()
+    ExpT_id = SelectField('Maturity', choices=[(dates[0], dates[0].strftime('%Y-%m-%d')),
+                                            (dates[1], dates[1].strftime('%Y-%m-%d')),
+                                            (dates[2], dates[2].strftime('%Y-%m-%d'))])
     K = StringField('Strike Price', validators=[DataRequired()])
     rate = StringField('Interest Rate', validators=[DataRequired()])
-    Otype = SelectField('Option Type', choices=[('Call Option', 'Buy'),('Put Option', 'Sell')])
     submit = SubmitField('Show me IVol')
 
