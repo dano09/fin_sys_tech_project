@@ -152,10 +152,9 @@ class option_data:
 
         # interpolate the implied vol for every maturity====================
         # interpolation function:
-        # This function do not work well for the first maturity; I'm using 2nd poly for the first
+        # This function do not work well
         def iv_curve(k, a, b, rho, m, sigma):
             return a + b * (rho * (k - m) + np.sqrt((k - m) ** 2 + sigma ** 2))
-
         # how many maturities
         time = np.unique(subset['Texp'])
         N_time = time.shape[0]
@@ -175,18 +174,32 @@ class option_data:
         #     fitted_z = np.append(fitted_z, iv_curve(x_in, *popt))
 
         subset_sub = subset.loc[subset['Texp'] == time[0],:]
-        popt, pcov = curve_fit(iv_curve, subset_sub['Moneyness'].values, subset_sub['Implied_Vol'].values)
+        method = 'lm'
+        try:   # try normal fitting
+            popt, pcov = curve_fit(iv_curve, subset_sub['Moneyness'].values, subset_sub['Implied_Vol'].values,
+                                   method=method)
+            value = iv_curve(x_in, *popt)
+        except RuntimeError:   # if no optimal parameters found:
+            popt = np.polyfit(subset_sub['Moneyness'].values, subset_sub['Implied_Vol'].values, 2)
+            foo = np.poly1d(popt)
+            value = foo(x_in)
         fitted_x = np.append(fitted_x, x_in)
         fitted_y = np.append(fitted_y, np.ones(len(x_in))*time[0])
-        fitted_z = np.append(fitted_z, iv_curve(x_in, *popt))
+        fitted_z = np.append(fitted_z, value)
         # using polynomial
         for i in range(1, N_time):
             subset_sub = subset.loc[subset['Texp'] == time[i], :]
-            popt= np.polyfit(subset_sub['Moneyness'].values, subset_sub['Implied_Vol'].values, 4)
-            foo = np.poly1d(popt)
+            try:
+                popt, pcov = curve_fit(iv_curve, subset_sub['Moneyness'].values, subset_sub['Implied_Vol'].values,
+                                       method=method)
+                value = iv_curve(x_in, *popt)
+            except RuntimeError:
+                popt = np.polyfit(subset_sub['Moneyness'].values, subset_sub['Implied_Vol'].values, 2)
+                foo = np.poly1d(popt)
+                value = foo(x_in)
             fitted_x = np.append(fitted_x, x_in)
             fitted_y = np.append(fitted_y, np.ones(len(x_in)) * time[i])
-            fitted_z = np.append(fitted_z, foo(x_in))
+            fitted_z = np.append(fitted_z, value)
         return fitted_x, fitted_y, fitted_z
 
     def iv_interpolation(self, ExpDate, strike, ExpT, option_type='A'):
@@ -222,7 +235,7 @@ class option_data:
         """output the PnL vector at the maturity using hedge ratio"""
         ExpT = self.get_date_annual()[ExpT_id]
         ExpDate = self.get_date()[ExpT_id]
-        imp_vol = self.iv_interpolation(ExpDate, strike, ExpT, option_type)
+        imp_vol = self.iv_interpolation(ExpDate, strike, ExpT)
         # get the future price on this date
         F = self.future_data.loc[self.future_data['Texp'] == ExpT, 'markPrice'].values[0]
         if price_range is None:
@@ -242,8 +255,6 @@ class option_data:
         PnL = PnL_position + PnL_option
         plt.plot(FT, PnL)
         plt.show()
-
-
 
     # =====================================================================data output methods
 
