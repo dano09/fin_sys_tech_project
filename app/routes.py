@@ -199,7 +199,7 @@ def option():
         mydata = myoption.data.loc[myoption.data['ExpirationDate']==ExpT_id, :]
         plot = create_vol_chart(mydata['Implied_Vol'], mydata['Strike'])
         script, div = components(plot)
-        return render_template('result.html', title='Input result', Hratio=Hratio, T=ExpT_id.strftime('%Y-%m-%d'),
+        return render_template('result.html', title='Input result', Hratio=Hratio, T=ExpT_id,
                                K=K, i=rate, O=Otype, div=div, script=script)
 
     #print('About to redirect to index')
