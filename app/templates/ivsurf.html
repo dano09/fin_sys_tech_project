@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+
+<form action="/ivsurf_show" method="post">
+    <h2>Plot Implied Volatility Surface</h2>
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.Ftype.label }}<br>
+        {{ form.Ftype }}<br>
+        {% for error in form.Ftype.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p> {{ form.submit() }} </p>
+</form>
+
+        {% endblock %}

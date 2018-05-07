@@ -27,8 +27,6 @@ class option_data:
     def __init__(self, interest_rate=0, K_range=(0, math.inf)):
         # this is my account. Don't share it to others. But I don't have money in it :P
         self.client = RestClient('2SQfDzW1Kaf3F', 'HOG2A2HCYERM2YONRBTYEBMYRZ2ESN3K')
-        self.client.index()
-        self.client.account()
         self.rate = interest_rate
         # download option prices
         min_K, max_K = K_range
@@ -433,8 +431,6 @@ class date_selection:
     def __init__(self, interest_rate=0, K_range=(0, math.inf)):
         # this is my account. Don't share it to others. But I don't have money in it :P
         self.client = RestClient('2SQfDzW1Kaf3F', 'HOG2A2HCYERM2YONRBTYEBMYRZ2ESN3K')
-        self.client.index()
-        self.client.account()
         data = self.client.getsummary('future')
         # convert this list of dictionaries into data frame
         data = pd.DataFrame.from_dict(data=data)
@@ -448,3 +444,11 @@ class date_selection:
         dates = pd.Series.sort_values(self.data['ExpirationDate'])
         dates = dates.reset_index(drop=True)
         return dates
+
+class current_index:
+    def __init__(self, interest_rate=0, K_range=(0, math.inf)):
+        # this is my account. Don't share it to others. But I don't have money in it :P
+        self.client = RestClient('2SQfDzW1Kaf3F', 'HOG2A2HCYERM2YONRBTYEBMYRZ2ESN3K')
+
+    def get_index(self):
+        return self.client.index()['btc']

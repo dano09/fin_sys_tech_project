@@ -3,7 +3,7 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField, Integ
 from wtforms.validators import DataRequired, ValidationError, Email, EqualTo, Length
 
 from app import dataservices
-from app.optionsdata import date_selection
+from app.optionsdata import date_selection, current_index
 from app.dataservices import Dataservices
 from app.models import User
 from wtforms.fields.html5 import DateField
@@ -11,18 +11,14 @@ from wtforms.fields import SelectField
 
 
 class HelloForm(FlaskForm):
-    showme = SubmitField('Plot')
-    Otype = SelectField('Option Type', choices=[('Put', 'Long Position w/ Hedge'),('Call', 'Short Position w/ Hedge')],
+    Otype = SelectField('Option Type', choices=[('Put option', 'Put option'),('Call option', 'Call option')],
                         description='Select the option type you go long with.')
-    Hratio = StringField('Hedge Ratio', validators=[DataRequired()])
     dates_obj = date_selection()
     dates = dates_obj.get_date()
     ExpT_id = SelectField('Maturity', choices=[(dates[0], dates[0].strftime('%Y-%m-%d')),
                                             (dates[1], dates[1].strftime('%Y-%m-%d')),
                                             (dates[2], dates[2].strftime('%Y-%m-%d'))])
-    K = StringField('Strike Price', validators=[DataRequired()])
-    rate = StringField('Interest Rate', validators=[DataRequired()])
-    submit = SubmitField('Simulate')
+    submit = SubmitField('Plot Implied Volatility')
     
 
 class LoginForm(FlaskForm):
@@ -69,17 +65,33 @@ class SimulationExchangeForm(FlaskForm):
     exchanges = SelectField(label='Exchanges', choices=exchange_list)
     submit = SubmitField('Pick an Exchange')
 
+class surfaceForm(FlaskForm):
+    Ftype = SelectField('Figure Style:', choices=[(0, 'Scatter'),
+                                                (1, 'Fitted lines'),
+                                                (2, 'Full Surface')])
+    submit = SubmitField('Generate Plot')
 
 class OptionForm(FlaskForm):
-    Otype = SelectField('Option Type', choices=[('P', 'Long Position w/ Hedge'),('C', 'Short Position w/ Hedge')],
+    Otype = SelectField('Option Type', choices=[('Put option', 'Put option'), ('Call option', 'Call option')],
                         description='Select the option type you go long with.')
-    Hratio = StringField('Hedge Ratio', validators=[DataRequired()])
     dates_obj = date_selection()
     dates = dates_obj.get_date()
     ExpT_id = SelectField('Maturity', choices=[(dates[0], dates[0].strftime('%Y-%m-%d')),
                                             (dates[1], dates[1].strftime('%Y-%m-%d')),
                                             (dates[2], dates[2].strftime('%Y-%m-%d'))])
-    K = StringField('Strike Price', validators=[DataRequired()])
-    rate = StringField('Interest Rate', validators=[DataRequired()])
     submit = SubmitField('Show me IVol')
 
+
+class HedgeForm(FlaskForm):
+    Otype = SelectField('Option Type', choices=[('P', 'Long position of Future w/ put hedging'),
+                                                ('C', 'Short position of Future w/ call hedging')],
+                        description='Select the option type you go long with.')
+    Hratio = StringField('Hedge Ratio', validators=[DataRequired()])
+    K = StringField('Strike', validators=[DataRequired()])
+    dates_obj = date_selection()
+    dates = dates_obj.get_date()
+    ExpT_id = SelectField('Maturity', choices=[(dates[0], dates[0].strftime('%Y-%m-%d')),
+                                            (dates[1], dates[1].strftime('%Y-%m-%d')),
+                                            (dates[2], dates[2].strftime('%Y-%m-%d'))])
+
+    submit = SubmitField('Simulate')
