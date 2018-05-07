@@ -28,6 +28,7 @@ class option_data:
         # this is my account. Don't share it to others. But I don't have money in it :P
         self.client = RestClient('2SQfDzW1Kaf3F', 'HOG2A2HCYERM2YONRBTYEBMYRZ2ESN3K')
         self.rate = interest_rate
+        self.index = self.client.index()['btc']
         # download option prices
         min_K, max_K = K_range
         data_tmp = self._download_option_price(min_K, max_K)
@@ -125,7 +126,8 @@ class option_data:
             return result[0][0]
 
     def _price_calculator(self, *data_in):
-        """This is a calculator only for external use; won't be called in the class"""
+        """This is a calculator only for external use; won't be called in the class
+        output is number of bitcoins as expected payoff"""
         ExpT, F, K, rate, vol, Option_Type = data_in
         rate = np.float64(rate)
         d1 = (math.log(K / F) + (rate + vol ** 2 / 2) * ExpT) / vol / math.sqrt(ExpT)
@@ -217,13 +219,14 @@ class option_data:
         ExpDate = self.get_date()[ExpT_id]
         imp_vol = self.iv_interpolation(ExpDate, strike, ExpT, option_type)
         # get the future price on this date
-        F = self.future_data.loc[self.future_data['Texp']==ExpT, 'markPrice'].values[0]
+        F = self.future_data.loc[self.future_data['Texp']==ExpT, 'markPrice']
         # if there is no data, raise exception
         if len(F) == 0:
             print('This Date Has No Future Data.')
             return 0
+        F = F.values[0]
         # calculate the price of the option in dollars
-        price = F * self._price_calculator(ExpT, F, strike, self.rate, imp_vol, option_type)
+        price = self.index * self._price_calculator(ExpT, F, strike, self.rate, imp_vol, option_type)
 
         if option_type == 'C':
             d2 = (math.log(F/ (strike+ price)) +(self.rate - imp_vol ** 2 / 2) * ExpT) / imp_vol / math.sqrt(ExpT)
@@ -250,14 +253,14 @@ class option_data:
             minF, maxF = price_range
             FT = np.linspace(minF, maxF, 101)
         # calculate the price of the option in dollars
-        price = F * self._price_calculator(ExpT, F, strike, self.rate, imp_vol, option_type)
+        price =  self.index* self._price_calculator(ExpT, F, strike, self.rate, imp_vol, option_type)
         #calculate PnL
         if option_type == 'C':
             PnL_position = F - FT       # short position
-            PnL_option = option_size * (np.array([np.max([0, 1 / strike - 1 / i]) for i in FT]) * strike * F - price)
+            PnL_option = option_size * (np.array([np.max([0, 1 / strike - 1 / i]) for i in FT]) * strike * FT - price)
         elif option_type == 'P':
             PnL_position = FT - F      # long position
-            PnL_option = option_size * (np.array([np.max([0, 1 / i - 1 / strike]) for i in FT]) * strike * F - price)
+            PnL_option = option_size * (np.array([np.max([0, 1 / i - 1 / strike]) for i in FT]) * strike * FT - price)
         PnL = PnL_position + PnL_option
         return pd.DataFrame(np.column_stack((FT, PnL, PnL_option, PnL_position)),
                             columns=['FT', 'PnL', 'PnL_option', 'PnL_position'])

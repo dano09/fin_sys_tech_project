@@ -203,7 +203,12 @@ def hedging_sim():
         result = mydata.PnL(K,ExpT_id,Hratio,Otype)
         plot = create_PnL_chart(result['FT'], result['PnL'])
         script, div = components(plot)
-        return render_template('hedging_show.html', title='Hedging Simulation', div=div, script=script)
+
+        #probability
+        prob = mydata.prob_of_make_money(ExpT_id,K,Otype)
+        return render_template('hedging_show.html', title='Hedging Simulation',
+                               prob=prob*100, price=mydata.index,
+                               div=div, script=script)
 
     #print('About to redirect to index')
     return render_template('hedging_in.html', form=form)
