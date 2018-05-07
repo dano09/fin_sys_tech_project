@@ -259,8 +259,8 @@ class option_data:
             PnL_position = FT - F      # long position
             PnL_option = option_size * (np.array([np.max([0, 1 / i - 1 / strike]) for i in FT]) * strike * F - price)
         PnL = PnL_position + PnL_option
-        plt.plot(FT, PnL)
-        plt.show()
+        return pd.DataFrame(np.column_stack((FT, PnL, PnL_option, PnL_position)),
+                            columns=['FT', 'PnL', 'PnL_option', 'PnL_position'])
 
     # =====================================================================data output methods
 

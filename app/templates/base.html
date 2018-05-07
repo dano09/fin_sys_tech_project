@@ -16,6 +16,7 @@
             <a href="{{ url_for('start_simulation') }}">Historical Price</a>
             <a href="{{ url_for('index') }}">Implied Volatility</a>
             <a href="{{ url_for('ivsurf') }}">Implied Volatility Surface</a>
+            <a href="{{ url_for('hedging') }}">Hedging Simulator</a>
             <a href="{{ url_for('exchangeForm') }}">AJAX Example</a>
             {% if current_user.is_anonymous %}
             <a href="{{ url_for('login') }}">Login</a>

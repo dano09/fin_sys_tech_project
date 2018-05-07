@@ -1,0 +1,16 @@
+﻿{% extends "index.html" %}
+
+{% block content %}
+<head>
+    <link href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.13.min.css" rel="stylesheet">
+    <link href="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.0.min.css" rel="stylesheet">
+</head>
+
+{{ div|safe }}
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.13.min.js"></script>
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.5.min.js"></script>
+{{ script|safe }}
+
+
+
+{% endblock %}

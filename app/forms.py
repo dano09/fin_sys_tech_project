@@ -90,8 +90,8 @@ class HedgeForm(FlaskForm):
     K = StringField('Strike', validators=[DataRequired()])
     dates_obj = date_selection()
     dates = dates_obj.get_date()
-    ExpT_id = SelectField('Maturity', choices=[(dates[0], dates[0].strftime('%Y-%m-%d')),
-                                            (dates[1], dates[1].strftime('%Y-%m-%d')),
-                                            (dates[2], dates[2].strftime('%Y-%m-%d'))])
+    ExpT_id = SelectField('Maturity', choices=[(0, dates[0].strftime('%Y-%m-%d')),
+                                            (1, dates[1].strftime('%Y-%m-%d')),
+                                            (2, dates[2].strftime('%Y-%m-%d'))])
 
     submit = SubmitField('Simulate')

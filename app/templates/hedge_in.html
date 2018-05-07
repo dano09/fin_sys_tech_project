@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+
+<form action="/hedging_sim" method="post">
+    <h2>Hedge Simulator</h2>
+    {{ form.hidden_tag() }}
+
+    <p>
+        {{ form.Otype.label }}<br>
+        {{ form.Otype }}<br>
+        {% for error in form.Otype.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.ExpT_id.label }}<br>
+        {{ form.ExpT_id }}<br>
+        {% for error in form.ExpT_id.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+        <p>
+        {{ form.Hratio.label }}<br>
+        {{ form.Hratio }}<br>
+        {% for error in form.Hratio.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+        <p>
+        {{ form.K.label }}<br>
+        {{ form.K }}<br>
+        {% for error in form.K.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p> {{ form.submit() }} </p>
+</form>
+
+        {% endblock %}

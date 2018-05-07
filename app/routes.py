@@ -3,12 +3,12 @@ from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 
 from app.dataservices import Dataservices
-from app.datavisualization import create_hover_tool, create_bar_chart, create_line_chart, create_vol_chart
+from app.datavisualization import create_hover_tool, create_bar_chart, create_line_chart, create_vol_chart, create_PnL_chart
 from app.models import User
 from app.optionsdata import option_data
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, HelloForm, SimulationForm, \
-    OptionForm, surfaceForm, SimulationExchangeForm, ExchangeForm
+    OptionForm, surfaceForm, HedgeForm, SimulationExchangeForm, ExchangeForm
 
 import random
 from app.optionsdata import date_selection, current_index
@@ -25,12 +25,6 @@ def home():
     index = current_index()
     BTCindex = index.get_index()
     return render_template('base.html', title='Home', price=BTCindex)
-
-@app.route('/index', methods=['GET','POST'])
-def index():
-    print('inside /option route')
-    form = HelloForm(request.form)
-    return render_template('index.html', form=form)
 
 @app.route('/chart', methods=['GET', 'POST'])
 def chart():
@@ -163,6 +157,11 @@ def get_symbol_ids():
     #                                  request.form['source_language'],
     #                                  request.form['dest_language'])})
 
+@app.route('/index', methods=['GET','POST'])
+def index():
+    print('inside /option route')
+    form = HelloForm(request.form)
+    return render_template('index.html', form=form)
 
 @app.route('/option', methods=['GET','POST'])
 def option():
@@ -186,22 +185,28 @@ def option():
 @app.route('/hedging', methods=['GET','POST'])
 def hedging():
     print('inside /hedging route')
+    form = HedgeForm(request.form)
+    return render_template('hedge_in.html', form=form)
 
-    form = HelloForm(request.form)
+@app.route('/hedging_sim', methods=['GET','POST'])
+def hedging_sim():
+    print('inside /hedging_sim route')
+
+    form = HedgeForm(request.form)
 
     if request.method == 'POST':
+        Hratio = float(request.form['Hratio'])
+        K = int(request.form['K'])
+        ExpT_id = int(request.form['ExpT_id'])
         Otype = request.form['Otype']
-        ExpT_id = request.form['ExpT_id']
-
-        myoption = option_data()
-        mydata = myoption.data.loc[myoption.data['ExpirationDate']==ExpT_id, :]
-        plot = create_vol_chart(mydata['Implied_Vol'], mydata['Strike'])
+        mydata = option_data()
+        result = mydata.PnL(K,ExpT_id,Hratio,Otype)
+        plot = create_PnL_chart(result['FT'], result['PnL'])
         script, div = components(plot)
-        return render_template('result.html', title='Input result', T=ExpT_id, O=Otype,
-                               div=div, script=script)
+        return render_template('hedging_show.html', title='Hedging Simulation', div=div, script=script)
 
     #print('About to redirect to index')
-    return render_template('index.html', form=form)
+    return render_template('hedging_in.html', form=form)
 
 @app.route('/ivsurf', methods=['GET','POST'])
 def ivsurf():
@@ -212,16 +217,7 @@ def ivsurf():
 
 @app.route('/ivsurf_show', methods=['GET, POST'])
 def iv_surface_show():
-    print('inside /ivsurf route')
-
-    form = surfaceForm(request.form)
-
-    if request.method == 'POST':
-        fig = plt.figure()
-        plt.scatter([1, 10], [5, 9])
-        mpld3.save_html(fig, 'ivsurf_show.html')
-        return render_template('ivsurf_show.html')
-    return render_template('ivsurf.html', form=form)
+    pass
 
 
 @app.context_processor
