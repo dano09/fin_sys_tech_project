@@ -3,13 +3,16 @@ from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 
 from app.dataservices import Dataservices
-from app.datavisualization import create_hover_tool, create_bar_chart, create_line_chart, create_vol_chart
+from app.datavisualization import create_hover_tool, create_bar_chart, create_line_chart, create_vol_chart, create_PnL_chart
 from app.models import User
 from app.optionsdata import option_data
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, HelloForm, SimulationForm, OptionForm, SimulationExchangeForm, ExchangeForm
+from app.forms import LoginForm, RegistrationForm, HelloForm, SimulationForm, \
+    OptionForm, surfaceForm, HedgeForm, SimulationExchangeForm, ExchangeForm
 
 import random
+from app.optionsdata import date_selection, current_index
+import matplotlib.pyplot as plt, mpld3
 from bokeh.plotting import figure
 from bokeh.embed import components
 import pandas as pd
@@ -17,39 +20,11 @@ import os
 
 
 @app.route('/')
-def index():
-    print('inside /index route')
-    form = HelloForm(request.form)
-    return render_template('index.html', title='Home', form=form)
-
-
-@app.route('/hello', methods=['POST'])
-def hello():
-    print('inside /hello route')
-
-    # Re-creates the HelloForm Object
-    form = HelloForm(request.form)
-
-    if request.method == 'POST' and not form.validate_on_submit():
-        # This will simply get the name provided by the user from html
-        name = request.form['sayhello']
-        print('name is: {}'.format(name))
-
-        # This will re-create the wtforms.fields.core.StringField object
-        # not used here but could be useful
-        name2 = form['sayhello']
-        print('name2 is: {}'.format(type(name2)))
-
-        # This will re-create the wtforms.fields.core.SubmitField object
-        # not used here but could be useful
-        submit = form['submit']
-        print('submit is: {}'.format(type(submit)))
-
-        return render_template('hello.html', name=name)
-
-    print('About to redirect to index')
-    return render_template('index.html', form=form)
-
+def home():
+    print('inside / route')
+    index = current_index()
+    BTCindex = index.get_index()
+    return render_template('base.html', title='Home', price=BTCindex)
 
 @app.route('/chart', methods=['GET', 'POST'])
 def chart():
@@ -143,7 +118,8 @@ def simulation():
         plot = create_line_chart(bitcoin_data)
         script, div = components(plot)
 
-        return render_template('showResults.html', title='Cryptocurrency Data Display', start=start, end=end, div=div, script=script, data=bitcoin_data.to_html())
+        return render_template('showResults.html', title='Cryptocurrency Data Display',
+                               start=start, end=end, div=div, script=script, data=bitcoin_data.to_html())
 
     print('About to redirect to index')
     return render_template('index.html', form=form)
@@ -181,6 +157,11 @@ def get_symbol_ids():
     #                                  request.form['source_language'],
     #                                  request.form['dest_language'])})
 
+@app.route('/index', methods=['GET','POST'])
+def index():
+    print('inside /option route')
+    form = HelloForm(request.form)
+    return render_template('index.html', form=form)
 
 @app.route('/option', methods=['GET','POST'])
 def option():
@@ -189,25 +170,59 @@ def option():
     form = HelloForm(request.form)
 
     if request.method == 'POST':
-        print('got here xD')
-        Hratio = request.form['Hratio']
-        ExpT = request.form['ExpT']
-        S = request.form['S']
-        K = request.form['K']
-        rate = request.form['rate']
         Otype = request.form['Otype']
-
-        volresult = pd.DataFrame(option_data(rate).data['Implied_Vol'])
-
-        print('vol result is: {}'.format(volresult))
-
-        #print('data is : {}'.format(name))
-        plot = create_vol_chart(option_data(rate).data['Implied_Vol'], option_data(rate).data['Strike'])
+        ExpT_id = request.form['ExpT_id']
+        myoption = option_data()
+        mydata = myoption.data.loc[myoption.data['ExpirationDate']==ExpT_id, :]
+        plot = create_vol_chart(mydata['Implied_Vol'], mydata['Strike'])
         script, div = components(plot)
-        return render_template('result.html', title='Input result', Price=Hratio, T=ExpT, S=S, K=K, i=rate, O=Otype, vol=volresult.to_html(), div=div, script=script)
+        return render_template('result.html', title='Implied Vol Result',
+                               T=ExpT_id, O=Otype, div=div, script=script)
 
     #print('About to redirect to index')
     return render_template('index.html', form=form)
+
+@app.route('/hedging', methods=['GET','POST'])
+def hedging():
+    print('inside /hedging route')
+    form = HedgeForm(request.form)
+    return render_template('hedge_in.html', form=form)
+
+@app.route('/hedging_sim', methods=['GET','POST'])
+def hedging_sim():
+    print('inside /hedging_sim route')
+
+    form = HedgeForm(request.form)
+
+    if request.method == 'POST':
+        Hratio = float(request.form['Hratio'])
+        K = int(request.form['K'])
+        ExpT_id = int(request.form['ExpT_id'])
+        Otype = request.form['Otype']
+        mydata = option_data()
+        result = mydata.PnL(K,ExpT_id,Hratio,Otype)
+        plot = create_PnL_chart(result['FT'], result['PnL'])
+        script, div = components(plot)
+
+        #probability
+        prob = mydata.prob_of_make_money(ExpT_id,K,Otype)
+        return render_template('hedging_show.html', title='Hedging Simulation',
+                               prob=prob*100, price=mydata.index,
+                               div=div, script=script)
+
+    #print('About to redirect to index')
+    return render_template('hedging_in.html', form=form)
+
+@app.route('/ivsurf', methods=['GET','POST'])
+def ivsurf():
+    print('inside /ivsurf route')
+    form = surfaceForm(request.form)
+    return render_template('ivsurf.html', form=form)
+
+
+@app.route('/ivsurf_show', methods=['GET, POST'])
+def iv_surface_show():
+    pass
 
 
 @app.context_processor

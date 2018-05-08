@@ -96,11 +96,27 @@ def create_vol_chart (vol,strike, width=1200, height=300):
     p2.xaxis.axis_label = 'Strike Price'
     p2.yaxis.axis_label = 'Implied Vol'
     p2.toolbar.logo = None
-    p2.scatter(strike,vol,color='pink')
+    p2.scatter(strike,vol,color='blue')
     p2.legend.location = "top_left"
 
     hover = p2.select(dict(type=HoverTool))
     hover.tooltips = [("Implied_Vol", "@y{0.00}"), ("Strike Price", "@x{0.00}"), ]
+    hover.mode = 'mouse'
+
+    return p2
+
+def create_PnL_chart(FT,PnL, width=1200, height=300):
+    tools_to_show = 'hover,box_zoom,pan,save,reset,wheel_zoom'
+    p2 = figure(title="Profit & Loss at Maturity", tools=tools_to_show)
+    p2.grid.grid_line_alpha=0.3
+    p2.xaxis.axis_label = 'Price at Maturity'
+    p2.yaxis.axis_label = 'Profit & Loss'
+    p2.toolbar.logo = None
+    p2.line(FT,PnL,color='blue')
+    p2.legend.location = "top_left"
+
+    hover = p2.select(dict(type=HoverTool))
+    hover.tooltips = [("PnL", "@y{0.00}"), ("Price at Maturity", "@x{0.00}"), ]
     hover.mode = 'mouse'
 
     return p2
