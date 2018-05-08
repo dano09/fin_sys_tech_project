@@ -1,6 +1,7 @@
 # sudo pip install deribit-api
 from deribit_api import RestClient
 from scipy.optimize import fsolve
+from scipy.optimize import OptimizeWarning
 import scipy.interpolate as it
 import itertools
 from scipy.optimize import curve_fit
@@ -11,6 +12,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import math
 import numpy as np
+import warnings
 
 class option_data:
     """class 'option_data':
@@ -175,11 +177,13 @@ class option_data:
 
         subset_sub = subset.loc[subset['Texp'] == time[0],:]
         method = 'lm'
+        # change the optimization warning to exception
+        warnings.simplefilter("error", OptimizeWarning)
         try:   # try normal fitting
             popt, pcov = curve_fit(iv_curve, subset_sub['Moneyness'].values, subset_sub['Implied_Vol'].values,
                                    method=method)
             value = iv_curve(x_in, *popt)
-        except RuntimeError:   # if no optimal parameters found:
+        except (RuntimeError, OptimizeWarning) as error:   # if no optimal parameters found:
             popt = np.polyfit(subset_sub['Moneyness'].values, subset_sub['Implied_Vol'].values, 2)
             foo = np.poly1d(popt)
             value = foo(x_in)
@@ -193,7 +197,7 @@ class option_data:
                 popt, pcov = curve_fit(iv_curve, subset_sub['Moneyness'].values, subset_sub['Implied_Vol'].values,
                                        method=method)
                 value = iv_curve(x_in, *popt)
-            except RuntimeError:
+            except (RuntimeError, OptimizeWarning) as error:
                 popt = np.polyfit(subset_sub['Moneyness'].values, subset_sub['Implied_Vol'].values, 2)
                 foo = np.poly1d(popt)
                 value = foo(x_in)
