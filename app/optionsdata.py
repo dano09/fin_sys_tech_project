@@ -294,6 +294,7 @@ class option_data:
                        for i in range(result.shape[0])]
         condition_d = [(result.loc[i, 'FT'] < strike and result.loc[i, 'PnL']>= 0)
                        for i in range(result.shape[0])]
+
         Prob = 0
         if len(np.where(condition_u)[0])>0:
             FT_u = np.min(result.loc[np.where(condition_u)[0], 'FT'])
