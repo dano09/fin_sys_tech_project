@@ -12,7 +12,6 @@ from app.forms import LoginForm, RegistrationForm, HelloForm, SimulationForm, \
 
 import random
 from app.optionsdata import date_selection, current_index
-import matplotlib.pyplot as plt, mpld3
 from bokeh.plotting import figure
 from bokeh.embed import components
 import pandas as pd
@@ -220,9 +219,13 @@ def ivsurf():
     return render_template('ivsurf.html', form=form)
 
 
-@app.route('/ivsurf_show', methods=['GET, POST'])
-def iv_surface_show():
-    pass
+@app.route('/ivsurf_show/')
+def ivsurf_show():
+    # generate html code
+    mydata = option_data()
+    mydata.plotly_iv_surface()
+    # save html
+    return render_template('ivsurf_show.html')
 
 
 @app.context_processor
