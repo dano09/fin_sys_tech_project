@@ -153,12 +153,10 @@ def option():
         Otype = request.form['Otype']
         ExpT_id = request.form['ExpT_id']
         myoption = option_data()
-        print(Otype)
         condition = np.array([(myoption.data.loc[i, 'ExpirationDate']==pd.to_datetime(ExpT_id) and
                                myoption.data.loc[i, 'OptionType']==Otype)
                      for i in range(myoption.data.shape[0])])
         mydata = myoption.data.loc[np.where(condition)[0], :]
-        print(np.where(condition)[0])
         selection = {'P': 'Put option', 'C': 'Call option'}
         plot = create_vol_chart(mydata['Implied_Vol'], mydata['Strike'])
         script, div = components(plot)
@@ -201,7 +199,7 @@ def hedging_sim():
                                prob=prob, price=mydata.index,
                                strike=K,
                                strategy=selection[Otype],
-                               Maturity=mydata.get_date()[ExpT_id],
+                               Maturity=pd.to_datetime(mydata.get_date()[ExpT_id]).strftime('%Y-%m-%d'),
                                div=div, script=script)
 
     #print('About to redirect to index')
