@@ -219,14 +219,28 @@ def ivsurf():
     return render_template('ivsurf.html', form=form)
 
 
-@app.route('/ivsurf_show/')
+@app.route('/ivsurf_show', methods=['GET','POST'])
 def ivsurf_show():
-    # generate html code
-    mydata = option_data()
-    mydata.plotly_iv_surface()
-    # save html
-    return render_template('ivsurf_show.html')
+    print('inside /ivsurf_show route')
+    form = surfaceForm(request.form)
 
+    if request.method == 'POST':
+        Ftype = int(request.form['Ftype'])
+        print('Your plotting choise:', Ftype)
+        # download data
+        mydata = option_data()
+
+        if Ftype == 0:
+            # save html
+            mydata.plotly_iv()
+        elif Ftype == 1:
+            # save html
+            mydata.plotly_fitted()
+        elif Ftype == 2:
+            # save html
+            mydata.plotly_iv_surface()
+        return app.send_static_file('ivsurf_show.html')
+    return render_template('ivsurf.html', form=form)
 
 @app.context_processor
 def override_url_for():

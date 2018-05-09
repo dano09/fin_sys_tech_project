@@ -407,7 +407,7 @@ class option_data:
         ax.set_zlabel('Implied Vol')
         plt.show()
 
-    def plot_fitted(self, option_type='A', size_x=50):
+    def plot_fitted(self, option_type='A', size=(50,50)):
         """Plot the implied vol surface"""
         # get subset
         # consider specified option type
@@ -420,7 +420,7 @@ class option_data:
                          for i in range(self.data.shape[0])]
             subset = self.data.loc[np.where(condition)[0], :]
         # initialize x axis
-        moneyness = np.linspace(np.min(subset['Moneyness']), np.max(subset['Moneyness']), size_x)
+        moneyness = np.linspace(np.min(subset['Moneyness']), np.max(subset['Moneyness']), size[0])
         # fit using this axis
         fitted_x, fitted_y, fitted_z = self.fitting(moneyness, option_type)
         # interpolate every maturity
@@ -436,6 +436,77 @@ class option_data:
         ax.set_ylabel('Maturity')
         ax.set_zlabel('Implied Vol')
         plt.show()
+
+    # ================================================================================plotly functions
+    def plotly_iv(self, option_type='A', size=(50, 50)):
+            # get subset
+            subset = self.data
+            subset1 = subset.loc[subset['OptionType'] == 'C', :]
+            subset2 = subset.loc[subset['OptionType'] == 'P', :]
+            trace1 = go.Scatter3d(
+                x=subset1['Strike'],
+                y= subset1['Texp'],
+                z= subset1['Implied_Vol'],
+                mode="markers"
+            )
+            trace2 = go.Scatter3d(
+                x=subset2['Strike'],
+                y= subset2['Texp'],
+                z= subset2['Implied_Vol'],
+                mode="markers"
+            )
+            layout = go.Layout(
+                xaxis={'title': 'Strike'},
+                yaxis={'title': 'Maturity'},
+            )
+            d = [trace1, trace2]
+            py.plot(d, layout,
+                    filename="C:/Users/Zimeng/PycharmProjects/fin_sys_tech_project/app/static/ivsurf_show.html",
+                    auto_open=False)
+
+    def plotly_fitted(self, option_type='A', size=(50, 50)):
+        # get subset
+        # consider specified option type
+        if option_type == 'C' or option_type == 'P':
+            subset = self.data.loc[self.data['OptionType'] == option_type, :]
+        # consider subset with moneyness >= 0 for call and moneyness <0 for put
+        else:
+            condition = [(self.data.loc[i, 'Moneyness'] >= 0 and self.data.loc[i, 'OptionType'] == 'C') or
+                         (self.data.loc[i, 'Moneyness'] < 0 and self.data.loc[i, 'OptionType'] == 'P')
+                         for i in range(self.data.shape[0])]
+            subset = self.data.loc[np.where(condition)[0], :]
+        # initialize x axis
+        moneyness = np.linspace(np.min(subset['Moneyness']), np.max(subset['Moneyness']), size[0])
+        # fit using this axis
+        fitted_x, fitted_y, fitted_z = self.fitting(moneyness, option_type)
+
+        unique_Texp = np.unique(fitted_y)
+
+        trace1 = go.Scatter3d(
+            x=subset['Moneyness'],
+            y=subset['Texp'],
+            z=subset['Implied_Vol'],
+            mode="markers"
+        )
+        d=[trace1]
+        for i in range(len(unique_Texp)):
+            trace1 = go.Scatter3d(
+                x=fitted_x[fitted_y==unique_Texp[i]],
+                y=fitted_y[fitted_y==unique_Texp[i]],
+                z=fitted_z[fitted_y==unique_Texp[i]],
+                mode='lines'
+            )
+            d.append(trace1)
+
+        layout = go.Layout(
+            scene=dict(
+                xaxis={'title':'Moneyness'},
+                yaxis={'title':'Maturity'},
+                zaxis={'title':'Implied Volatility'})
+        )
+        py.plot(d, layout,
+                filename="C:/Users/Zimeng/PycharmProjects/fin_sys_tech_project/app/static/ivsurf_show.html",
+                auto_open=False)
 
     def plotly_iv_surface(self, option_type='A', size=(50, 50)):
             # get subset
@@ -469,7 +540,8 @@ class option_data:
                 yaxis={'title': 'Maturity'},
             )
             d = [trace1, trace2]
-            py.plot(d, layout,filename="C:/Users/liuyu/source/repos/fin_sys_tech_project/app/templates/ivsurf_show.html",
+            py.plot(d, layout,
+                    filename="C:/Users/Zimeng/PycharmProjects/fin_sys_tech_project/app/static/ivsurf_show.html",
                     auto_open=False)
 
 class date_selection:
