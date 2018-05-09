@@ -18,12 +18,12 @@ import pandas as pd
 import os
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def home():
     print('inside / route')
     index = current_index()
     BTCindex = index.get_index()
-    return render_template('base.html', title='Home', price=BTCindex)
+    return render_template('home.html', title='Home', price=BTCindex)
 
 @app.route('/chart', methods=['GET', 'POST'])
 def chart():

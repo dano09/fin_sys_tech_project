@@ -8,6 +8,7 @@ from bokeh.plotting import figure, show, output_file
 import pandas as pd
 import numpy as np
 
+
 def create_hover_tool():
     hover_html = """
       <div>
@@ -61,6 +62,7 @@ def create_bar_chart(data, title, x_name, y_name, hover_tool=None,
     return plot
 
 
+# plot using bokeh
 def create_line_chart(df, width=1200, height=300):
     df = df.dropna(axis=0, how='any')
     print('inside create_line_chart func')
@@ -89,7 +91,9 @@ def create_line_chart(df, width=1200, height=300):
 
     return p1
 
-def create_vol_chart (vol,strike, width=1200, height=300):
+
+# plot using bokeh
+def create_vol_chart(vol,strike, width=1200, height=300):
     tools_to_show = 'hover,box_zoom,pan,save,reset,wheel_zoom'
     p2 = figure(title="Implied Vol", tools=tools_to_show)
     p2.grid.grid_line_alpha=0.3
@@ -105,6 +109,8 @@ def create_vol_chart (vol,strike, width=1200, height=300):
 
     return p2
 
+
+# plot using bokeh
 def create_PnL_chart(FT,PnL, width=1200, height=300):
     tools_to_show = 'hover,box_zoom,pan,save,reset,wheel_zoom'
     p2 = figure(title="Profit & Loss at Maturity", tools=tools_to_show)
