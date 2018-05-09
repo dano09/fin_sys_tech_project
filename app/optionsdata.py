@@ -289,7 +289,7 @@ class option_data:
             return 0
         F = F.values[0]
         # calculate PnL and take the positive integration
-        result = self.PnL(strike, ExpT_id, option_size, option_type, price_range=None)
+        result = self.PnL(strike, ExpT_id, option_size, option_type, price_range)
         condition_u = [(result.loc[i, 'FT'] >=strike and result.loc[i, 'PnL']>=0)
                        for i in range(result.shape[0])]
         condition_d = [(result.loc[i, 'FT'] < strike and result.loc[i, 'PnL']>= 0)
