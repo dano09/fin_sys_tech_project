@@ -307,8 +307,8 @@ class option_data:
 
         return Prob
 
-
-
+    def generate_prob_distribution(self):
+        pass
 
     # =====================================================================data output methods
 

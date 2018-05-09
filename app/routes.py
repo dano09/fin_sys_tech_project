@@ -8,9 +8,10 @@ from app.models import User
 from app.optionsdata import option_data
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, HelloForm, SimulationForm, \
-    OptionForm, surfaceForm, HedgeForm, SimulationExchangeForm, ExchangeForm
+    surfaceForm, HedgeForm, SimulationExchangeForm, ExchangeForm
 
 import random
+import numpy as np
 from app.optionsdata import date_selection, current_index
 from bokeh.plotting import figure
 from bokeh.embed import components
@@ -152,11 +153,18 @@ def option():
         Otype = request.form['Otype']
         ExpT_id = request.form['ExpT_id']
         myoption = option_data()
-        mydata = myoption.data.loc[myoption.data['ExpirationDate']==ExpT_id, :]
+        print(Otype)
+        condition = np.array([(myoption.data.loc[i, 'ExpirationDate']==pd.to_datetime(ExpT_id) and
+                               myoption.data.loc[i, 'OptionType']==Otype)
+                     for i in range(myoption.data.shape[0])])
+        mydata = myoption.data.loc[np.where(condition)[0], :]
+        print(np.where(condition)[0])
+        selection = {'P': 'Put option', 'C': 'Call option'}
         plot = create_vol_chart(mydata['Implied_Vol'], mydata['Strike'])
         script, div = components(plot)
         return render_template('result.html', title='Implied Vol Result',
-                               T=str.split(' ', ExpT_id)[0], O=Otype, div=div, script=script)
+                               T=str.split(' ', ExpT_id)[0], O=selection[Otype],
+                               div=div, script=script)
 
     #print('About to redirect to index')
     return render_template('index.html', form=form)
