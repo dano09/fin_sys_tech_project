@@ -156,7 +156,7 @@ def option():
         plot = create_vol_chart(mydata['Implied_Vol'], mydata['Strike'])
         script, div = components(plot)
         return render_template('result.html', title='Implied Vol Result',
-                               T=ExpT_id, O=Otype, div=div, script=script)
+                               T=str.split(' ', ExpT_id)[0], O=Otype, div=div, script=script)
 
     #print('About to redirect to index')
     return render_template('index.html', form=form)
@@ -187,8 +187,13 @@ def hedging_sim():
         #probability
         prob = mydata.prob_of_make_money(K, ExpT_id, Hratio, Otype)
         prob = int(round(prob,4)*10000)/100
+        selection = {'P': 'Long position of Future w/ put hedging',
+                     'C': 'Short position of Future w/ call hedging'}
         return render_template('hedging_show.html', title='Hedging Simulation',
                                prob=prob, price=mydata.index,
+                               strike=K,
+                               strategy=selection[Otype],
+                               Maturity=mydata.get_date()[ExpT_id],
                                div=div, script=script)
 
     #print('About to redirect to index')
