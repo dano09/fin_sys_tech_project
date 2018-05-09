@@ -186,7 +186,7 @@ def hedging_sim():
         script, div = components(plot)
 
         #probability
-        prob = mydata.prob_of_make_money(ExpT_id,K,Otype)
+        prob = mydata.prob_of_make_money(K, ExpT_id, Otype)
         return render_template('hedging_show.html', title='Hedging Simulation',
                                prob=prob*100, price=mydata.index,
                                div=div, script=script)
