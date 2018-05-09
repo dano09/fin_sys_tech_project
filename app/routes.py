@@ -25,28 +25,6 @@ def home():
     BTCindex = index.get_index()
     return render_template('home.html', title='Home', price=BTCindex)
 
-@app.route('/chart', methods=['GET', 'POST'])
-def chart():
-    form = HelloForm(request.form)  
-
-    if request.method == 'POST':
-        bars_count = int(request.form['barc'])
-        print('bars_count is: {}'.format(bars_count))
-        if bars_count <= 0:
-            bars_count = 1
-
-    data = {"days": [], "bugs": [], "costs": []}
-    for i in range(1, bars_count + 1):
-        data['days'].append(str(i))
-        data['bugs'].append(random.randint(1, 100))
-        data['costs'].append(random.uniform(1.00, 1000.00))
-
-    hover = create_hover_tool()
-    plot = create_bar_chart(data, "Bugs found per day", "days", "bugs", hover)
-    script, div = components(plot)
-
-    return render_template("chart.html", title='Bar charts with Bokeh', bars_count=bars_count, the_div=div, the_script=script, form=form)
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -156,11 +134,13 @@ def get_symbol_ids():
     #                                  request.form['source_language'],
     #                                  request.form['dest_language'])})
 
+
 @app.route('/index', methods=['GET','POST'])
 def index():
     print('inside /option route')
     form = HelloForm(request.form)
     return render_template('index.html', form=form)
+
 
 @app.route('/option', methods=['GET','POST'])
 def option():
@@ -181,11 +161,13 @@ def option():
     #print('About to redirect to index')
     return render_template('index.html', form=form)
 
+
 @app.route('/hedging', methods=['GET','POST'])
 def hedging():
     print('inside /hedging route')
     form = HedgeForm(request.form)
     return render_template('hedge_in.html', form=form)
+
 
 @app.route('/hedging_sim', methods=['GET','POST'])
 def hedging_sim():
@@ -211,6 +193,7 @@ def hedging_sim():
 
     #print('About to redirect to index')
     return render_template('hedging_in.html', form=form)
+
 
 @app.route('/ivsurf', methods=['GET','POST'])
 def ivsurf():
@@ -241,6 +224,7 @@ def ivsurf_show():
             mydata.plotly_iv_surface()
         return app.send_static_file('ivsurf_show.html')
     return render_template('ivsurf.html', form=form)
+
 
 @app.context_processor
 def override_url_for():
