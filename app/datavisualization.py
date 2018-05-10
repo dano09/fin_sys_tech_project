@@ -126,3 +126,21 @@ def create_PnL_chart(FT,PnL, width=1200, height=300):
     hover.mode = 'mouse'
 
     return p2
+
+
+# plot using bokeh
+def create_PDF_chart(FT, PDF, width=1200, height=300):
+    tools_to_show = 'hover,box_zoom,pan,save,reset,wheel_zoom'
+    p2 = figure(title="Implied Probability Density", tools=tools_to_show)
+    p2.grid.grid_line_alpha=0.3
+    p2.xaxis.axis_label = 'Price at Maturity'
+    p2.yaxis.axis_label = 'Probability Density'
+    p2.toolbar.logo = None
+    p2.line(FT,PDF,color='red')
+    p2.legend.location = "top_left"
+
+    hover = p2.select(dict(type=HoverTool))
+    hover.tooltips = [("Density", "@y{0.00}"), ("Price at Maturity", "@x{0.00}"), ]
+    hover.mode = 'mouse'
+
+    return p2
