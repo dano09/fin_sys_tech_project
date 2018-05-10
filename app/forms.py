@@ -65,11 +65,13 @@ class SimulationExchangeForm(FlaskForm):
     exchanges = SelectField(label='Exchanges', choices=exchange_list)
     submit = SubmitField('Pick an Exchange')
 
+
 class surfaceForm(FlaskForm):
     Ftype = SelectField('Figure Style:', choices=[(0, 'Scatter'),
                                                 (1, 'Fitted lines'),
                                                 (2, 'Full Surface')])
     submit = SubmitField('Generate Plot')
+
 
 class OptionForm(FlaskForm):
     Otype = SelectField('Option Type', choices=[('Put option', 'Put option'), ('Call option', 'Call option')],

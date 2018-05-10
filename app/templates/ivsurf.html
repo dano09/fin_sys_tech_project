@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 
-<form action="/ivsurf_show" method="get">
+<form action="/ivsurf_show", method="post">
     <h2>Plot Implied Volatility Surface</h2>
     {{ form.hidden_tag() }}
     <p>

@@ -218,7 +218,37 @@ class option_data:
         _, fitted_y, fitted_z = self.fitting(moneyness, option_type)
         return fitted_z[fitted_y == ExpT][0]
 
-    def prob_of_make_money(self, ExpT_id, strike, option_type='C'):
+    def PnL(self, strike, ExpT_id, option_size = 1, option_type='C', price_range=None):
+        """output the PnL vector at the maturity using hedge ratio
+        strike: any user defined strike price. must be integers
+        ExpT_id: which expiration date to use. e.g. 0 means the first future expiration
+        option_size: the size of the contract
+        option_type
+        price_range: used for the plotting purpose"""
+        ExpT = self.get_date_annual()[ExpT_id]
+        ExpDate = self.get_date()[ExpT_id]
+        imp_vol = self.iv_interpolation(ExpDate, strike, ExpT)
+        # get the future price on this date
+        F = self.future_data.loc[self.future_data['Texp'] == ExpT, 'markPrice'].values[0]
+        if price_range is None:
+            FT = np.linspace(F - 4000, F + 4000, 101)
+        else:
+            minF, maxF = price_range
+            FT = np.linspace(minF, maxF, 101)
+        # calculate the price of the option in dollars
+        price =  self.index* self._price_calculator(ExpT, F, strike, self.rate, imp_vol, option_type)
+        #calculate PnL
+        if option_type == 'C':
+            PnL_position = F - FT       # short position
+            PnL_option = option_size * (np.array([np.max([0, 1 / strike - 1 / i]) for i in FT]) * strike * FT - price)
+        elif option_type == 'P':
+            PnL_position = FT - F      # long position
+            PnL_option = option_size * (np.array([np.max([0, 1 / i - 1 / strike]) for i in FT]) * strike * FT - price)
+        PnL = PnL_position + PnL_option
+        return pd.DataFrame(np.column_stack((FT, PnL, PnL_option, PnL_position)),
+                            columns=['FT', 'PnL', 'PnL_option', 'PnL_position'])
+
+    def prob_of_make_money_option(self, strike, ExpT_id, option_type='C'):
         """calculate the probability of making money at maturity according to the implied vol
         strike: any user defined strike price. must be integers
         ExpT_id: which expiration date to use. e.g. 0 means the first future expiration
@@ -243,35 +273,42 @@ class option_data:
             d2 = (math.log(F / (strike - price)) + (self.rate - imp_vol ** 2 / 2) * ExpT) / imp_vol / math.sqrt(ExpT)
             return norm.cdf(-d2)
 
-    def PnL(self, strike, ExpT_id, option_size = 1, option_type='C', price_range=None):
-        """output the PnL vector at the maturity using hedge ratio
+    def prob_of_make_money(self, strike, ExpT_id, option_size = 1, option_type='C', price_range=None):
+        """calculate the probability of making money at maturity according to the implied vol
         strike: any user defined strike price. must be integers
         ExpT_id: which expiration date to use. e.g. 0 means the first future expiration
-        option_size: the size of the contract
-        option_type
-        price_range: used for the plotting purpose"""
+        """
         ExpT = self.get_date_annual()[ExpT_id]
         ExpDate = self.get_date()[ExpT_id]
-        imp_vol = self.iv_interpolation(ExpDate, strike, ExpT)
+        imp_vol = self.iv_interpolation(ExpDate, strike, ExpT, option_type)
         # get the future price on this date
-        F = self.future_data.loc[self.future_data['Texp'] == ExpT, 'markPrice'].values[0]
-        if price_range is None:
-            FT = np.linspace(F - 3000, F + 3000, 101)
-        else:
-            minF, maxF = price_range
-            FT = np.linspace(minF, maxF, 101)
-        # calculate the price of the option in dollars
-        price =  self.index* self._price_calculator(ExpT, F, strike, self.rate, imp_vol, option_type)
-        #calculate PnL
-        if option_type == 'C':
-            PnL_position = F - FT       # short position
-            PnL_option = option_size * (np.array([np.max([0, 1 / strike - 1 / i]) for i in FT]) * strike * FT - price)
-        elif option_type == 'P':
-            PnL_position = FT - F      # long position
-            PnL_option = option_size * (np.array([np.max([0, 1 / i - 1 / strike]) for i in FT]) * strike * FT - price)
-        PnL = PnL_position + PnL_option
-        return pd.DataFrame(np.column_stack((FT, PnL, PnL_option, PnL_position)),
-                            columns=['FT', 'PnL', 'PnL_option', 'PnL_position'])
+        F = self.future_data.loc[self.future_data['Texp']==ExpT, 'markPrice']
+        # if there is no data, raise exception
+        if len(F) == 0:
+            print('This Date Has No Future Data.')
+            return 0
+        F = F.values[0]
+        # calculate PnL and take the positive integration
+        result = self.PnL(strike, ExpT_id, option_size, option_type, price_range)
+        condition_u = [(result.loc[i, 'FT'] >=strike and result.loc[i, 'PnL']>=0)
+                       for i in range(result.shape[0])]
+        condition_d = [(result.loc[i, 'FT'] < strike and result.loc[i, 'PnL']>= 0)
+                       for i in range(result.shape[0])]
+
+        Prob = 0
+        if len(np.where(condition_u)[0])>0:
+            FT_u = np.min(result.loc[np.where(condition_u)[0], 'FT'])
+            d2 = (math.log(F/FT_u) +(self.rate - imp_vol ** 2 / 2) * ExpT) / imp_vol / math.sqrt(ExpT)
+            Prob += norm.cdf(d2)
+        if len(np.where(condition_d)[0])>0:
+            FT_d = np.max(result.loc[np.where(condition_d)[0], 'FT'])
+            d2 = (math.log(F/FT_d) + (self.rate - imp_vol ** 2 / 2) * ExpT) / imp_vol / math.sqrt(ExpT)
+            Prob += norm.cdf(-d2)
+
+        return Prob
+
+
+
 
     # =====================================================================data output methods
 
@@ -407,7 +444,7 @@ class option_data:
         ax.set_zlabel('Implied Vol')
         plt.show()
 
-    def plot_fitted(self, option_type='A', size_x=50):
+    def plot_fitted(self, option_type='A', size=(50,50)):
         """Plot the implied vol surface"""
         # get subset
         # consider specified option type
@@ -420,7 +457,7 @@ class option_data:
                          for i in range(self.data.shape[0])]
             subset = self.data.loc[np.where(condition)[0], :]
         # initialize x axis
-        moneyness = np.linspace(np.min(subset['Moneyness']), np.max(subset['Moneyness']), size_x)
+        moneyness = np.linspace(np.min(subset['Moneyness']), np.max(subset['Moneyness']), size[0])
         # fit using this axis
         fitted_x, fitted_y, fitted_z = self.fitting(moneyness, option_type)
         # interpolate every maturity
@@ -437,6 +474,91 @@ class option_data:
         ax.set_zlabel('Implied Vol')
         plt.show()
 
+    # ================================================================================plotly functions
+    def plotly_iv(self, option_type='A', size=(50, 50)):
+            # get subset
+            subset = self.data
+            subset1 = subset.loc[subset['OptionType'] == 'C', :]
+            subset2 = subset.loc[subset['OptionType'] == 'P', :]
+            CallOption = go.Scatter3d(
+                x=subset1['Strike'],
+                y= subset1['Texp'],
+                z= subset1['Implied_Vol'],
+                opacity=0.89,
+                name='Call Option',
+                mode="markers"
+            )
+            PutOption = go.Scatter3d(
+                x= subset2['Strike'],
+                y= subset2['Texp'],
+                z= subset2['Implied_Vol'],
+                opacity=0.89,
+                name='Put Option',
+                mode="markers"
+            )
+            layout = go.Layout(title='Implied Volatility Scatterplot',
+                scene = dict(
+                    xaxis = dict(
+                        title='Strike'),
+                    yaxis = dict(
+                        title='Maturity'),
+                    zaxis = dict(
+                        title='Implied Volatility'),)
+            )
+            fig = go.Figure(data=[CallOption, PutOption], layout=layout)
+            py.plot(fig,
+                    filename="C:/Users/liuyu/source/repos/fin_sys_tech_project/app/static/ivsurf_show.html",
+                    auto_open=False)
+
+    def plotly_fitted(self, option_type='A', size=(50, 50)):
+        # get subset
+        # consider specified option type
+        if option_type == 'C' or option_type == 'P':
+            subset = self.data.loc[self.data['OptionType'] == option_type, :]
+        # consider subset with moneyness >= 0 for call and moneyness <0 for put
+        else:
+            condition = [(self.data.loc[i, 'Moneyness'] >= 0 and self.data.loc[i, 'OptionType'] == 'C') or
+                         (self.data.loc[i, 'Moneyness'] < 0 and self.data.loc[i, 'OptionType'] == 'P')
+                         for i in range(self.data.shape[0])]
+            subset = self.data.loc[np.where(condition)[0], :]
+        # initialize x axis
+        moneyness = np.linspace(np.min(subset['Moneyness']), np.max(subset['Moneyness']), size[0])
+        # fit using this axis
+        fitted_x, fitted_y, fitted_z = self.fitting(moneyness, option_type)
+
+        unique_Texp = np.unique(fitted_y)
+
+        trace1 = go.Scatter3d(
+            x=subset['Moneyness'],
+            y=subset['Texp'],
+            z=subset['Implied_Vol'],
+            opacity=0.89,
+            mode="markers"
+        )
+
+        for i in range(len(unique_Texp)):
+            trace1 = go.Scatter3d(
+                x=fitted_x[fitted_y==unique_Texp[i]],
+                y=fitted_y[fitted_y==unique_Texp[i]],
+                z=fitted_z[fitted_y==unique_Texp[i]],
+                mode='lines'
+            )
+            d=[trace1]
+            d.append(trace1)
+            layout = go.Layout(title='Implied Volatility Fitted Line',
+                scene = dict(
+                    xaxis = dict(
+                        title='Moneyness'),
+                    yaxis = dict(
+                        title='Maturity'),
+                    zaxis = dict(
+                        title='Implied Volatility'),)
+            )
+            fig = go.Figure(data=[trace1], layout=layout)
+        py.plot(fig,
+                filename="C:/Users/liuyu/source/repos/fin_sys_tech_project/app/static/ivsurf_show.html",
+                auto_open=False)
+
     def plotly_iv_surface(self, option_type='A', size=(50, 50)):
             # get subset
             # consider specified option type
@@ -452,8 +574,8 @@ class option_data:
             # plot result
             X, Y, Z = self.output_iv_matrix(option_type, size)
             trace1 = go.Surface(
-
                 colorscale='Viridis',
+                opacity=0.89,
                 x=X,
                 y=Y,
                 z=Z
@@ -462,14 +584,21 @@ class option_data:
                 x=subset['Moneyness'],
                 y=subset['Texp'],
                 z=subset['Implied_Vol'],
+                opacity=0.89,
                 mode="markers"
             )
-            layout = go.Layout(
-                xaxis={'title': 'Moneyness'},
-                yaxis={'title': 'Maturity'},
+            layout = go.Layout(title='Implied Volatility Surface',
+                scene = dict(
+                    xaxis = dict(
+                        title='Moneyness'),
+                    yaxis = dict(
+                        title='Maturity'),
+                    zaxis = dict(
+                        title='Implied Volatility'),)
             )
-            d = [trace1, trace2]
-            py.plot(d, layout,filename="C:/Users/liuyu/source/repos/fin_sys_tech_project/app/templates/ivsurf_show.html",
+            fig = go.Figure(data=[trace1, trace2], layout=layout)
+            py.plot(fig,
+                    filename="C:/Users/liuyu/source/repos/fin_sys_tech_project/app/static/ivsurf_show.html",
                     auto_open=False)
 
 class date_selection:
