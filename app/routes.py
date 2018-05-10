@@ -21,7 +21,6 @@ import os
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
-    print('inside / route')
     index = current_index()
     BTCindex = index.get_index()
     return render_template('home.html', title='Home', price=BTCindex)
@@ -77,17 +76,12 @@ def start_simulation():
 
 @app.route('/simulation', methods=['GET', 'POST'])
 def simulation():
-    print('inside /simulation route')
-
     # Create Simulation Form
     form = SimulationForm(request.form)
 
     if request.method == 'POST':
         start = request.form['start']
         end = request.form['end']
-
-        print('startdate is: {} and type is {}'.format(start, type(start)))
-        print('enddate is: {}'.format(end))
 
         # Use Dataservices class to get data now
         ds = Dataservices()
@@ -99,7 +93,6 @@ def simulation():
         return render_template('showResults.html', title='Cryptocurrency Data Display',
                                start=start, end=end, div=div, script=script, data=bitcoin_data.to_html())
 
-    print('About to redirect to index')
     return render_template('index.html', form=form)
 
 
@@ -127,13 +120,7 @@ def exchangedic():
 
 @app.route('/get_symbol_id_for_exchange', methods=['POST'])
 def get_symbol_ids():
-    print('-----inside ajax get_symbol_ids--------')
     exchange = request.form['exchange']
-    print('exchange is : {}'.format(exchange))
-
-    #return jsonify({'text': translate(request.form['text'],
-    #                                  request.form['source_language'],
-    #                                  request.form['dest_language'])})
 
 
 @app.route('/index', methods=['GET','POST'])
@@ -145,7 +132,6 @@ def index():
 
 @app.route('/option', methods=['GET','POST'])
 def option():
-    print('inside /option route')
 
     form = HelloForm(request.form)
 
@@ -164,7 +150,6 @@ def option():
                                T=str.split(' ', ExpT_id)[0], O=selection[Otype],
                                div=div, script=script)
 
-    #print('About to redirect to index')
     return render_template('index.html', form=form)
 
 
