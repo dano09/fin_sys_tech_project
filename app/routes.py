@@ -185,11 +185,14 @@ def hedging_sim():
         # calculate probability
         prob = mydata.prob_of_make_money(K, ExpT_id, Hratio, Otype)
         prob = int(round(prob,4)*10000)/100
+        # calculate expected payoff
+        exp_pay = int(np.sum(result['PnL'].values[1:-1] * PDF_result['PDF'].values))
         selection = {'P': 'Long position of Future w/ put hedging',
                      'C': 'Short position of Future w/ call hedging'}
         return render_template('hedging_show.html', title='Hedging Simulation',
                                prob=prob, price=mydata.index,
                                strike=K, max_loss=max_loss,
+                               exp_pay = exp_pay,
                                strategy=selection[Otype],
                                Maturity=pd.to_datetime(mydata.get_date()[ExpT_id]).strftime('%Y-%m-%d'),
                                div=div, script=script, div2=div2, script2=script2)
