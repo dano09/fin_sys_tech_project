@@ -40,7 +40,7 @@ class Dataservices:
         call_api_flag = False
 
         # Get Symbols from Saved .csv
-        symbols = pd.read_csv('C:/Users/Justin/PycharmProjects/fin_sys_tech_project/data/coinAPI_symbols.csv')
+        symbols = pd.read_csv('/home/ben/PycharmProjects/fin_sys_tech_project/data/coinAPI_symbols.csv')
         # symbols = pd.read_csv('/home/ben/PycharmProjects/fin_sys_tech_project/data/coinAPI_symbols.csv')
 
         if call_api_flag:
