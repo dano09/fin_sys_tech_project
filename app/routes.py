@@ -148,7 +148,7 @@ def option():
         plot = create_vol_chart(mydata['Implied_Vol'], mydata['Strike'])
         script, div = components(plot)
         return render_template('result.html', title='Implied Vol Result',
-                               T=str.split(' ', ExpT_id)[0], O=selection[Otype],
+                               T=ExpT_id, O=selection[Otype],
                                div=div, script=script)
 
     return render_template('index.html', form=form)
