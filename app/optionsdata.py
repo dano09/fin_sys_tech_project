@@ -43,8 +43,8 @@ class option_data:
         # reindex
         data = data.dropna(axis=0)
         data_on_index = data_on_index.dropna(axis=0)
-        data = data.reindex(index=range(data.shape[0]))
-        data_on_index = data_on_index.reindex(index=range(data_on_index.shape[0]))
+        data = data.reset_index()
+        data_on_index = data_on_index.reset_index()
         # save data
         self.data = data
         self.data_on_index = data_on_index
@@ -136,8 +136,8 @@ class option_data:
         output is number of bitcoins as expected payoff"""
         ExpT, F, K, rate, vol, Option_Type = data_in
         rate = np.float64(rate)
-        d1 = (math.log(K / F) + (rate + vol ** 2 / 2) * ExpT) / vol / math.sqrt(ExpT)
-        d2 = d1 - vol * math.sqrt(ExpT)
+        d1 = (np.log(K / F) + (rate + vol ** 2 / 2) * ExpT) / vol / np.sqrt(ExpT)
+        d2 = d1 - vol * np.sqrt(ExpT)
         if Option_Type == 'C':
             return K * (1 / K * norm.cdf(-d2) * math.exp(-rate * ExpT) - 1 / F * norm.cdf(-d1))
         elif Option_Type == 'P':
@@ -161,6 +161,8 @@ class option_data:
         # This function do not work well
         def iv_curve(k, a, b, rho, m, sigma):
             return a + b * (rho * (k - m) + np.sqrt((k - m) ** 2 + sigma ** 2))
+        def iv_curve2(k, a, b, m):
+            return np.abs(a*(k-b))+m
         # how many maturities
         time = np.unique(subset['Texp'])
         N_time = time.shape[0]
@@ -188,9 +190,12 @@ class option_data:
                                    method=method)
             value = iv_curve(x_in, *popt)
         except (RuntimeError, OptimizeWarning) as error:   # if no optimal parameters found:
-            popt = np.polyfit(subset_sub['Moneyness'].values, subset_sub['Implied_Vol'].values, 2)
-            foo = np.poly1d(popt)
-            value = foo(x_in)
+            popt, pcov = curve_fit(iv_curve2, subset_sub['Moneyness'].values, subset_sub['Implied_Vol'].values,
+                                   method=method)
+            value = iv_curve2(x_in, *popt)
+        #     popt = np.polyfit(subset_sub['Moneyness'].values, subset_sub['Implied_Vol'].values, 2)
+        #     foo = np.poly1d(popt)
+        #     value = foo(x_in)
         fitted_x = np.append(fitted_x, x_in)
         fitted_y = np.append(fitted_y, np.ones(len(x_in))*time[0])
         fitted_z = np.append(fitted_z, value)
@@ -202,9 +207,12 @@ class option_data:
                                        method=method)
                 value = iv_curve(x_in, *popt)
             except (RuntimeError, OptimizeWarning) as error:
-                popt = np.polyfit(subset_sub['Moneyness'].values, subset_sub['Implied_Vol'].values, 2)
-                foo = np.poly1d(popt)
-                value = foo(x_in)
+                popt, pcov = curve_fit(iv_curve2, subset_sub['Moneyness'].values, subset_sub['Implied_Vol'].values,
+                                       method=method)
+                value = iv_curve2(x_in, *popt)
+                # popt = np.polyfit(subset_sub['Moneyness'].values, subset_sub['Implied_Vol'].values, 2)
+                # foo = np.poly1d(popt)
+                # value = foo(x_in)
             fitted_x = np.append(fitted_x, x_in)
             fitted_y = np.append(fitted_y, np.ones(len(x_in)) * time[i])
             fitted_z = np.append(fitted_z, value)
@@ -214,7 +222,7 @@ class option_data:
         """Output the linear interpolated implied vol by selection"""
         # moneyness of this strike
         F = self.future_data.loc[self.future_data['ExpirationDate']==ExpDate, 'markPrice'].values[0]
-        moneyness =  np.array([-np.log(F/strike)])
+        moneyness =  np.array(-np.log(F/strike))
         _, fitted_y, fitted_z = self.fitting(moneyness, option_type)
         return fitted_z[fitted_y == ExpT][0]
 
@@ -307,7 +315,20 @@ class option_data:
 
         return Prob
 
-
+    def _generate_prob_distribution(self, ExpT_id):
+        ExpT = self.get_date_annual()[ExpT_id]
+        ExpDate = self.get_date()[ExpT_id]
+        # get the future price on this date
+        F = self.future_data.loc[self.future_data['Texp'] == ExpT, 'markPrice'].values[0]
+        strike = np.linspace(100, F*2, 20000)
+        imp_vol = self.iv_interpolation(ExpDate, strike, ExpT)
+        price_data = self._price_calculator(ExpT, F, strike, self.rate, imp_vol, 'C')
+        # calculate the second order derivative partial2 C/ partial K2
+        dK2 = np.min(np.diff(strike))**2
+        distribution = np.exp(self.rate*ExpT)*np.diff(price_data, n=2)/dK2
+        # normalize the distribution
+        distribution = distribution/sum(distribution)
+        return pd.DataFrame(np.column_stack((strike[1:-1], distribution)),columns=['Strike', 'PDF'])
 
 
     # =====================================================================data output methods

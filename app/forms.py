@@ -11,7 +11,7 @@ from wtforms.fields import SelectField
 
 
 class HelloForm(FlaskForm):
-    Otype = SelectField('Option Type', choices=[('Put option', 'Put option'),('Call option', 'Call option')],
+    Otype = SelectField('Option Type', choices=[('P', 'Put option'),('C', 'Call option')],
                         description='Select the option type you go long with.')
     dates_obj = date_selection()
     dates = dates_obj.get_date()
@@ -71,17 +71,6 @@ class surfaceForm(FlaskForm):
                                                 (1, 'Fitted lines'),
                                                 (2, 'Full Surface')])
     submit = SubmitField('Generate Plot')
-
-
-class OptionForm(FlaskForm):
-    Otype = SelectField('Option Type', choices=[('Put option', 'Put option'), ('Call option', 'Call option')],
-                        description='Select the option type you go long with.')
-    dates_obj = date_selection()
-    dates = dates_obj.get_date()
-    ExpT_id = SelectField('Maturity', choices=[(dates[0], dates[0].strftime('%Y-%m-%d')),
-                                            (dates[1], dates[1].strftime('%Y-%m-%d')),
-                                            (dates[2], dates[2].strftime('%Y-%m-%d'))])
-    submit = SubmitField('Show me IVol')
 
 
 class HedgeForm(FlaskForm):
