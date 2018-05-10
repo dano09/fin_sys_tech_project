@@ -63,7 +63,7 @@ def create_vol_chart(vol,strike, width=1200, height=300):
     p2.xaxis.axis_label = 'Strike Price'
     p2.yaxis.axis_label = 'Implied Vol'
     p2.toolbar.logo = None
-    p2.scatter(strike,vol,color='blue', size = 5)
+    p2.scatter(strike,vol,color='blue', size = 10)
     p2.legend.location = "top_left"
 
     hover = p2.select(dict(type=HoverTool))
