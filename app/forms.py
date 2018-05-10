@@ -11,8 +11,7 @@ from wtforms.fields import SelectField
 
 
 class HelloForm(FlaskForm):
-    Otype = SelectField('Option Type', choices=[('P', 'Put option'),('C', 'Call option')],
-                        description='Select the option type you go long with.')
+    Otype = SelectField('Option Type', choices=[('P', 'Put option'),('C', 'Call option')])
     dates_obj = date_selection()
     dates = dates_obj.get_date()
     ExpT_id = SelectField('Maturity', choices=[(dates[0], dates[0].strftime('%Y-%m-%d')),
@@ -77,7 +76,7 @@ class HedgeForm(FlaskForm):
     Otype = SelectField('Option Type', choices=[('P', 'Long position of Future w/ put hedging'),
                                                 ('C', 'Short position of Future w/ call hedging')],
                         description='Select the option type you go long with.')
-    Hratio = StringField('Hedge Ratio', validators=[DataRequired()])
+    Hratio = StringField('Hedge Ratio', validators=[DataRequired()], render_kw={"placeholder": "0.1-100"})
     K = StringField('Strike', validators=[DataRequired()])
     dates_obj = date_selection()
     dates = dates_obj.get_date()

@@ -20,9 +20,9 @@
             <a class="link" href="{{ url_for('hedging') }}" style="text-decoration:none;">Hedging Simulator</a>
             <a class="link" href="{{ url_for('exchangeForm') }}" style="text-decoration:none;">AJAX</a>
             {% if current_user.is_anonymous %}
-            <a class="link1"  herf="{{ url_for('login') }}" style="text-decoration:none;">Login</a>
+            <a class="link1" href="{{ url_for('login') }}" style="text-decoration:none;">Login</a>
             {% else %}
-            <a class="link1"  href="{{ url_for('logout') }}" style="text-decoration:none;">Logout</a>
+            <a class="link1" href="{{ url_for('logout') }}" style="text-decoration:none;">Logout</a>
             {% endif %}
         </div>
     </div>
