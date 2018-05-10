@@ -3,7 +3,7 @@ from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 
 from app.dataservices import Dataservices
-from app.datavisualization import create_hover_tool, create_bar_chart, create_line_chart, \
+from app.datavisualization import create_hover_tool, create_line_chart, \
     create_vol_chart, create_PnL_chart, create_PDF_chart
 from app.models import User
 from app.optionsdata import option_data
