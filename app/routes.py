@@ -3,7 +3,8 @@ from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 
 from app.dataservices import Dataservices
-from app.datavisualization import create_hover_tool, create_bar_chart, create_line_chart, create_vol_chart, create_PnL_chart
+from app.datavisualization import create_hover_tool, create_bar_chart, create_line_chart, \
+    create_vol_chart, create_PnL_chart, create_PDF_chart
 from app.models import User
 from app.optionsdata import option_data
 from app import app, db
@@ -172,20 +173,26 @@ def hedging_sim():
         ExpT_id = int(request.form['ExpT_id'])
         Otype = request.form['Otype']
         mydata = option_data()
+        # plot PnL
         result = mydata.PnL(K,ExpT_id,Hratio,Otype)
         plot = create_PnL_chart(result['FT'], result['PnL'])
+        max_loss = int(abs(np.min(result['PnL'])))
         script, div = components(plot)
-        #probability
+        # plot PDF
+        PDF_result = mydata._generate_prob_distribution(ExpT_id)
+        plot2 = create_PDF_chart(PDF_result['Strike'], PDF_result['PDF'])
+        script2, div2 = components(plot2)
+        # calculate probability
         prob = mydata.prob_of_make_money(K, ExpT_id, Hratio, Otype)
         prob = int(round(prob,4)*10000)/100
         selection = {'P': 'Long position of Future w/ put hedging',
                      'C': 'Short position of Future w/ call hedging'}
         return render_template('hedging_show.html', title='Hedging Simulation',
                                prob=prob, price=mydata.index,
-                               strike=K,
+                               strike=K, max_loss=max_loss,
                                strategy=selection[Otype],
                                Maturity=pd.to_datetime(mydata.get_date()[ExpT_id]).strftime('%Y-%m-%d'),
-                               div=div, script=script)
+                               div=div, script=script, div2=div2, script2=script2)
 
     #print('About to redirect to index')
     return render_template('hedging_in.html', form=form)
