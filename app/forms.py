@@ -48,8 +48,8 @@ class RegistrationForm(FlaskForm):
 
 
 class SimulationForm(FlaskForm):
-    start = DateField('startDate', format='%Y-%m-%d')
-    end = DateField('endDate', format='%Y-%m-%d')
+    start = DateField('From', format='%Y-%m-%d')
+    end = DateField('To', format='%Y-%m-%d')
     submit = SubmitField('Show Data')
 
 

@@ -1,8 +1,62 @@
 body {
     font-family: sans-serif;
-    background-image: url("https://s31.postimg.cc/t69um6oh7/bitcoin-computer-internet-money-coins-poster-images-207808.jpg");
+    background-image: url("https://cdn.pixabay.com/photo/2018/04/21/11/02/the-company-3338207_1280.jpg");
+    background-size: 100% 100%;
     font-size: 1.5em;
+    padding: 0;
+    margin: 0;
 }
+
+#header {
+    background-color: black;
+    /*Opacity start*/
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+    filter: alpha(opacity=80);
+    -moz-opacity: 0.80;
+    -khtml-opacity: 0.80;
+    opacity: 0.80;
+    /*Opacity end*/
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    padding: 0;
+    margin: 0;
+}
+
+    #header #header-content {
+        margin: 10px;
+    }
+
+#main {
+    height: 48px;
+    background-color: cadetblue;
+    line-height:48px;
+}
+
+
+#info1{
+    float:left;
+}
+
+
+#info2{
+    float: right;
+}
+
+#info2 a:hover{
+    color:white;
+    background-color:red;
+}
+
+
+.meue{
+    display:inline-block;
+    color:navajowhite;
+}
+
 
 head {
     font-family: Arial, Helvetica, sans-serif;
@@ -19,6 +73,7 @@ a {
 h1, h2 {
     font-family: Corbel;
     color: black;
+    margin-top: 56px;
 }
 
 
@@ -31,7 +86,26 @@ h2 {
 }
 
 .myheader {
-    color: #FF4500
+    font-family: sans-serif;
+    color: #FF4500;
+    font-size: 1.5em;
+}
+
+.link {
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    color: #F0FFFF;
+    font-size: 1.0em;
+    padding-left: 0.26em;
+    margin-left: 0.26em;
+}
+
+.link1 {
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    color: #F0FFFF;
+    font-size: 1.0em;
+    padding-left: 0.20em;
+    margin-left: 0.20em;
+    float:right
 }
 
 .page {

@@ -1,15 +1,23 @@
 {% extends "base.html" %}
-
 {% block content %}
-<h2> Cryptocurrency Data Display</h2>
 
 <form action="/simulation" method="post">
-    <dl>
-        <div>From</div>
-        {{ form.start }}
-        <div>To</div>
+    <h2> Cryptocurrency Data Display</h2>
+
+    <p>
+        {{ form.start.label }}<br>
+        {{ form.start }}<br />
+        {% for error in form.start.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.end.label }}<br>
         {{ form.end }}
-    </dl>
+        {% for error in form.end.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
     <p> {{ form.submit() }} </p>
 </form>
         {% endblock %}

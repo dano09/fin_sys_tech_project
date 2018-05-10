@@ -9,33 +9,35 @@
     <link rel="stylesheet" href="/static/css/reset.css?q=1280549780" type="text/css" media="screen" charset="utf-8" />
     <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
 </head>
-    <body>
-        <div>
-            <h1  class="myheader">Crypto Simulator</h1>
-            <a href="{{ url_for('home') }}">Home</a>
-            <a href="{{ url_for('start_simulation') }}">Historical Price</a>
-            <a href="{{ url_for('index') }}">Implied Volatility</a>
-            <a href="{{ url_for('ivsurf') }}">Implied Volatility Surface</a>
-            <a href="{{ url_for('hedging') }}">Hedging Simulator</a>
-            <a href="{{ url_for('exchangeForm') }}">AJAX Example</a>
+<body>
+    <div id="header">
+        <div id="header-content">
+            <a class="myheader ">Crypto Simulator</a>
+            <a class="link" href="{{ url_for('home') }}" style="text-decoration:none;">Home</a>
+            <a class="link" href="{{ url_for('start_simulation') }}" style="text-decoration:none;">Historical Price</a>
+            <a class="link" href="{{ url_for('index') }}" style="text-decoration:none;">Implied Volatility</a>
+            <a class="link" href="{{ url_for('ivsurf') }}"  style="text-decoration:none;">Implied Volatility Surface</a>
+            <a class="link" href="{{ url_for('hedging') }}" style="text-decoration:none;">Hedging Simulator</a>
+            <a class="link" href="{{ url_for('exchangeForm') }}" style="text-decoration:none;">AJAX</a>
             {% if current_user.is_anonymous %}
-            <a href="{{ url_for('login') }}">Login</a>
+            <a class="link1"  herf="{{ url_for('login') }}" style="text-decoration:none;">Login</a>
             {% else %}
-            <a href="{{ url_for('logout') }}">Logout</a>
+            <a class="link1"  href="{{ url_for('logout') }}" style="text-decoration:none;">Logout</a>
             {% endif %}
         </div>
-        <hr>
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
-        <ul>
-            {% for message in messages %}
-            <li>{{ message }}</li>
-            {% endfor %}
-        </ul>
-        {% endif %}
-        {% endwith %}
-        {% block content %}
-            <p>Bitcoin Current Index: ${{ price }}</p>
-        {% endblock %}
-    </body>
+    </div>
+    <br />
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+    {% block content %}
+        <p>Bitcoin Current Index: ${{ price }}</p>
+    {% endblock %}
+</body>
 </html>
