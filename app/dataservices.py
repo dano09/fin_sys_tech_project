@@ -1,5 +1,6 @@
 import requests
 import pandas as pd
+from os import getcwd
 
 class Dataservices:
     """ Used to pull data from cryptocurrency data from APIs"""
@@ -40,7 +41,7 @@ class Dataservices:
         call_api_flag = False
 
         # Get Symbols from Saved .csv
-        symbols = pd.read_csv('/home/ben/PycharmProjects/fin_sys_tech_project/data/coinAPI_symbols.csv')
+        symbols = pd.read_csv(getcwd()+'/data/coinAPI_symbols.csv')
         # symbols = pd.read_csv('/home/ben/PycharmProjects/fin_sys_tech_project/data/coinAPI_symbols.csv')
 
         if call_api_flag:

@@ -2,20 +2,18 @@
 from deribit_api import RestClient
 from scipy.optimize import fsolve
 from scipy.optimize import OptimizeWarning
-import scipy.interpolate as it
 import itertools
 from scipy.optimize import curve_fit
 from scipy.stats import norm
 from datetime import datetime
-from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import pandas as pd
 import math
 import numpy as np
 import warnings
 import plotly.offline as py
-from plotly.graph_objs import Scatter, Layout
 import plotly.graph_objs as go
+from os import getcwd
 
 
 class option_data:
@@ -526,7 +524,7 @@ class option_data:
         )
         fig = go.Figure(data=[CallOption, PutOption], layout=layout)
         py.plot(fig,
-                filename="/home/ben/PycharmProjects/fin_sys_tech_project/app/static/ivsurf_show.html",
+                filename=getcwd()+'/app/static/ivsurf_show.html',
                 auto_open=False)
 
     def plotly_fitted(self, option_type='A', size=(50, 50)):
@@ -577,7 +575,7 @@ class option_data:
         )
         fig = go.Figure(data=d, layout=layout)
         py.plot(fig,
-                filename='/home/ben/PycharmProjects/fin_sys_tech_project/app/static/ivsurf_show.html',
+                filename=getcwd()+'/app/static/ivsurf_show.html',
                 auto_open=False)
 
     def plotly_iv_surface(self, option_type='A', size=(50, 50)):
@@ -619,7 +617,7 @@ class option_data:
             )
             fig = go.Figure(data=[trace1, trace2], layout=layout)
             py.plot(fig,
-                    filename='/home/ben/PycharmProjects/fin_sys_tech_project/app/static/ivsurf_show.html',
+                    filename=getcwd()+'/app/static/ivsurf_show.html',
                     auto_open=False)
 
 class date_selection:
