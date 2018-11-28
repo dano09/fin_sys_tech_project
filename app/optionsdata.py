@@ -54,6 +54,7 @@ class option_data:
         data = self.client.getsummary('option')
         # convert this list of dictionaries into data frame
         data = pd.DataFrame.from_dict(data=data)
+        data = data.iloc[range(len(data)-1),]
         # split strings to get date and type
         data_tmp = data['instrumentName'].str.split('-')
         data['ExpirationDate'] = [data_tmp[i][1] for i in range(len(data))]
