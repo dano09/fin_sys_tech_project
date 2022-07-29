@@ -35,7 +35,7 @@ jupyterlab==0.30.6
 jupyterlab-launcher==0.6.0
 Mako==1.0.7
 MarkupSafe==1.0
-mistune==0.8.1
+mistune==2.0.3
 nb-anacondacloud==1.4.0
 nb-conda==2.2.0
 nb-conda-kernels==2.1.0
